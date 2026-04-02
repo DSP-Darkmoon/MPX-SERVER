@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3000;
 app.get('/api/schedule', async (req, res) => {
   try {
     const date = req.query.date || '';
-    const url = 'http://www.ds-pilot.co.kr/api/schedule' + (date ? '?date=' + date : '');
+    const url = 'http://www.ds-pilot.co.kr/api/forecast' + (date ? '?date=' + date : '');
     const response = await fetch(url);
     const data = await response.json();
     res.setHeader('Access-Control-Allow-Origin', '*');
