@@ -22,7 +22,7 @@ app.get('/api/schedule', async (req, res) => {
 app.use(express.static(path.join(__dirname, '.')));
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'MPX_2026-04-03_v41.html'));
+  res.sendFile(path.join(__dirname, 'MPX_2026-04-03_v42.html'));
 });
 
 app.listen(PORT, () => {
