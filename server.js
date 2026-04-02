@@ -19,10 +19,10 @@ app.get('/api/schedule', async (req, res) => {
   }
 });
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '.')));
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'MPX_2026-04-03_v41.html'));
 });
 
 app.listen(PORT, () => {
