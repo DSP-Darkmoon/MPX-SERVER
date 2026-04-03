@@ -21,7 +21,7 @@ app.get('/api/schedule', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.sendFile('/app/MPX_2026-04-03_v45.html', function(err) {
+  res.sendFile('/app/MPX_2026-04-03_v46.html', function(err) {
     if (err) res.status(500).send('Error: ' + err.message);
   });
 });
