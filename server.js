@@ -11,8 +11,8 @@ app.get('/api/schedule', async (req, res) => {
     const data = await response.json();
     const list = Array.isArray(data) ? data : (data.list || data.result || []);
     const filtered = date
-  ? list.filter(d => (d.DT_SHIP || '').replace(/\//g, '-').substring(0, 10) === date)
-  : list;
+      ? list.filter(d => (d.DT_SHIP || '').replace(/\//g, '-').substring(0, 10) === date)
+      : list;
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.json({ result: 'success', date: date, count: filtered.length, list: filtered });
   } catch(e) {
@@ -21,9 +21,7 @@ app.get('/api/schedule', async (req, res) => {
   }
 });
 
-app.use(express.static(path.join(__dirname, '.')));
-
-app.get('*', (req, res) => {
+app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'MPX_2026-04-03_v44.html'));
 });
 
