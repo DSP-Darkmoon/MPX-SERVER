@@ -57,7 +57,7 @@ app.get('/api/schedule', async function(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.json({ result: 'success', date: date, count: filtered.length, list: filtered });
   } catch(e) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    console.error('MAIL ERROR:', e.message);
     res.status(500).json({ error: e.message });
   }
 });
