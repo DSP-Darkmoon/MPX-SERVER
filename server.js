@@ -15,4 +15,15 @@ app.get('/api/schedule', async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.json({ result: 'success', date: date, count: filtered.length, list: filtered });
   } catch(e) {
-    res.setHeader('Access-Control-Allow-Origin
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.get('/', (req, res) => {
+  res.sendFile('MPX_2026-04-03_v44.html', { root: __dirname });
+});
+
+app.listen(PORT, () => {
+  console.log('MPX Server running on port ' + PORT);
+});
