@@ -23,7 +23,7 @@ app.get('/api/schedule', async (req, res) => {
 app.use(express.static('/app'));
 
 app.get('/', (req, res) => {
-  res.redirect('/MPX_2026-04-03_v47.html');
+  res.redirect('/MPX_2026-04-03_v48.html');
 });
 
 app.listen(PORT, () => {
