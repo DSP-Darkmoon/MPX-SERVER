@@ -1,18 +1,10 @@
 const express = require('express');
 const fetch = require('node-fetch');
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.json({ limit: '10mb' }));
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS
-  }
-});
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 app.options('/api/sendmail', function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -27,15 +19,16 @@ app.post('/api/sendmail', async function(req, res) {
     var html = req.body.html;
     var filename = req.body.filename;
     if (!html) return res.status(400).json({ error: 'html empty' });
-    await transporter.sendMail({
-      from: process.env.MAIL_USER,
+    await sgMail.send({
+      from: 'wony1390@gmail.com',
       to: 'dscontrol08@naver.com',
       subject: subject || 'MPX Certificate',
       html: '<p>MPX Certificate attached.</p>',
       attachments: [{
         filename: filename || 'Certificate.html',
-        content: Buffer.from(html, 'utf-8'),
-        contentType: 'text/html'
+        content: Buffer.from(html, 'utf-8').toString('base64'),
+        type: 'text/html',
+        disposition: 'attachment'
       }]
     });
     res.json({ result: 'success' });
