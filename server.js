@@ -25,7 +25,7 @@ app.get('/', (req, res) => {
   try {
     const html = fs.readFileSync('/app/MPX_2026-04-03_v46.html', 'utf8');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.send(html);
+    res.send(html.substring(0, 500));  // 처음 500자만
   } catch(e) {
     res.status(500).send('Error: ' + e.message);
   }
