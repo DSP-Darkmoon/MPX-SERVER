@@ -1,6 +1,5 @@
 const express = require('express');
 const fetch = require('node-fetch');
-const fs = require('fs');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -23,13 +22,6 @@ app.get('/api/schedule', async (req, res) => {
 
 app.get('/', (req, res) => {
   res.send('test123');
-});
-    const html = fs.readFileSync('/app/MPX_2026-04-03_v46.html', 'utf8');
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.send(html.substring(0, 500));  // 처음 500자만
-  } catch(e) {
-    res.status(500).send('Error: ' + e.message);
-  }
 });
 
 app.listen(PORT, () => {
