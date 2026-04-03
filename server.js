@@ -22,7 +22,8 @@ app.get('/api/schedule', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  try {
+  res.send('test123');
+});
     const html = fs.readFileSync('/app/MPX_2026-04-03_v46.html', 'utf8');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(html.substring(0, 500));  // 처음 500자만
