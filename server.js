@@ -21,7 +21,9 @@ app.get('/api/schedule', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.send('<h1>MPX Server OK</h1><p>dirname: ' + __dirname + '</p>');
+  res.sendFile('/app/MPX_2026-04-03_v44.html', function(err) {
+    if (err) res.status(500).send('Error: ' + err.message);
+  });
 });
 
 app.listen(PORT, () => {
