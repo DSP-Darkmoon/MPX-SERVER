@@ -20,8 +20,10 @@ app.get('/api/schedule', async (req, res) => {
   }
 });
 
+app.use(express.static('/app'));
+
 app.get('/', (req, res) => {
-  res.send('test123');
+  res.redirect('/MPX_2026-04-03_v46.html');
 });
 
 app.listen(PORT, () => {
