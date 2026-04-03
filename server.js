@@ -22,13 +22,9 @@ app.get('/api/schedule', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  try {
-    const html = fs.readFileSync('/app/MPX_2026-04-03_v46.html', 'utf8');
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.send(html);
-  } catch(e) {
-    res.status(500).send('Error reading file: ' + e.message);
-  }
+  const files = fs.readdirSync('/app');
+  const html = fs.existsSync('/app/MPX_2026-04-03_v46.html');
+  res.send('Files: ' + files.join(', ') + '<br>v46 exists: ' + html);
 });
 
 app.listen(PORT, () => {
