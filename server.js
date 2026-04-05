@@ -3,17 +3,33 @@ const fetch = require('node-fetch');
 const sgMail = require('@sendgrid/mail');
 const app = express();
 const PORT = process.env.PORT || 3000;
+
 app.use(express.json({ limit: '10mb' }));
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-app.options('/api/sendmail', function(req, res) {
+
+// 정적 파일 서빙 - 카톡/외부 브라우저 호환을 위한 헤더 추가
+app.use(express.static('/app', {
+  setHeaders: function(res, path) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    if (path.endsWith('.html')) {
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+  }
+}));
+
+// CORS 전역 허용
+app.use(function(req, res, next) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.sendStatus(200);
+  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  next();
 });
+
 app.post('/api/sendmail', async function(req, res) {
   console.log('sendmail called');
-  res.setHeader('Access-Control-Allow-Origin', '*');
   try {
     var subject = req.body.subject;
     var html = req.body.html;
@@ -37,6 +53,7 @@ app.post('/api/sendmail', async function(req, res) {
     res.status(500).json({ error: e.message });
   }
 });
+
 app.get('/api/schedule', async function(req, res) {
   try {
     var date = req.query.date || '';
@@ -46,16 +63,19 @@ app.get('/api/schedule', async function(req, res) {
     var filtered = date ? list.filter(function(d) {
       return (d.DT_SHIP || '').replace(/\//g, '-').substring(0, 10) === date;
     }) : list;
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // 날짜 필터 결과 없으면 전체 반환
+    if (date && filtered.length === 0) filtered = list;
     res.json({ result: 'success', date: date, count: filtered.length, list: filtered });
   } catch(e) {
     res.status(500).json({ error: e.message });
   }
 });
-app.use(express.static('/app'));
+
+// 루트 → 최신 MPX 파일로 리다이렉트
 app.get('/', function(req, res) {
-  res.redirect('/MPX_2026-04-04_v52.html');
+  res.redirect('/MPX_2026-04-05_v53.html');
 });
+
 app.listen(PORT, function() {
   console.log('MPX Server running on port ' + PORT);
 });
