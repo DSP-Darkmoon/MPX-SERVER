@@ -54,7 +54,7 @@ app.get('/api/schedule', async function(req, res) {
 });
 app.use(express.static('/app'));
 app.get('/', function(req, res) {
-  res.redirect('/MPX_2026-04-03_v52.html');
+  res.redirect('/MPX_2026-04-04_v52.html');
 });
 app.listen(PORT, function() {
   console.log('MPX Server running on port ' + PORT);
