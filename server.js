@@ -77,5 +77,8 @@ app.get('/', function(req, res) {
 });
 
 app.listen(PORT, function() {
+  var fs = require('fs');
   console.log('MPX Server running on port ' + PORT);
+  console.log('__dirname:', __dirname);
+  console.log('Files:', fs.readdirSync(__dirname).filter(function(f){ return f.endsWith('.html'); }));
 });
