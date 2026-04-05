@@ -1,3 +1,4 @@
+
 const express = require('express');
 const fetch = require('node-fetch');
 const sgMail = require('@sendgrid/mail');
@@ -8,7 +9,7 @@ app.use(express.json({ limit: '10mb' }));
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 // 정적 파일 서빙 - 카톡/외부 브라우저 호환을 위한 헤더 추가
-app.use(express.static(__dirname, {
+app.use(express.static('/app', {
   setHeaders: function(res, path) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('X-Content-Type-Options', 'nosniff');
