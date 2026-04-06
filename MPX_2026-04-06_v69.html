@@ -1,0 +1,3238 @@
+<!DOCTYPE html>
+<!--
+  ================================================================
+  MPX 정보교환 시스템 (Master-Pilot Exchange Information System)
+  ================================================================
+  Copyright © 2026 대산항 도선사회 (Daesan Pilot Association)
+  개발자: 홍태원 도선사 (T.W. HONG / Pilot, Daesan)
+  ================================================================
+-->
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>MPX</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,sans-serif;background:#e8eef6;color:#111827;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{width:100%;background:#f8faff;border:2px solid #93b4d4;border-radius:8px;color:#111827;font-family:inherit;font-size:15px;font-weight:500;padding:11px 13px;transition:border-color .2s;-webkit-appearance:none;appearance:none}
+input[type=time]{-webkit-appearance:none;appearance:none}
+input[type=time]::-webkit-datetime-edit-ampm-field{display:none!important}
+input[type=checkbox]{-webkit-appearance:none;appearance:none;width:11px;height:11px;min-width:11px;border:1px solid #555;border-radius:2px;background:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin:0;padding:0;flex-shrink:0}
+input[type=checkbox]:checked{background:#1a3a6b;border-color:#1a3a6b}
+input[type=checkbox]:checked::after{content:'v';color:#fff;font-size:8px;font-weight:700;line-height:1}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#1a3a6b;background:#eef4ff;box-shadow:0 0 0 3px rgba(26,58,107,.12)}
+select option{background:#fff;color:#111827;font-size:15px}
+textarea{resize:none;min-height:64px;line-height:1.5}
+.req{border:2px solid #e53e3e!important;background:#fff5f5!important}
+.screen{display:none;min-height:100vh;padding-bottom:40px}
+.screen.active{display:block}
+.app-header{background:linear-gradient(135deg,#1a3a6b,#0f2550);padding:14px 16px;position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:10px}
+.back-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 12px;border-radius:6px;font-size:13px}
+.app-header h2{font-size:15px;font-weight:700;color:#fff;flex:1}
+.port-badge{font-family:monospace;font-size:10px;background:rgba(245,200,66,.15);color:#f5c842;border:1px solid rgba(245,200,66,.3);padding:4px 10px;border-radius:20px}
+.home-hero{padding:32px 20px 24px;text-align:center;background:linear-gradient(180deg,#fff,#dce8f5);border-bottom:2px solid #c7d8f0}
+.home-hero .assoc{font-size:10px;letter-spacing:.16em;color:#4b5563;font-weight:600;margin-bottom:4px}
+.home-hero h1{font-size:22px;font-weight:800;color:#1a3a6b;letter-spacing:.04em;line-height:1.25;margin-bottom:4px}
+.home-hero .solas{font-size:10px;color:#6b7280;font-family:monospace;letter-spacing:.08em;margin-bottom:10px}
+#home-clock{font-family:monospace;font-size:22px;font-weight:700;color:#1a3a6b}
+.datetime-strip{background:#dce8f5;border-bottom:1px solid #c7d8f0;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;font-family:monospace;font-size:13px}
+.datetime-strip .tv{color:#1a3a6b;font-weight:800;font-size:16px}
+.datetime-strip .dv{color:#1f2937;font-weight:600}
+.sec-label{font-family:monospace;font-size:12px;letter-spacing:.10em;color:#1a3a6b;font-weight:700;text-transform:uppercase;padding:20px 20px 10px}
+.port-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 16px}
+.port-card{background:#fff;border:2px solid #b8d0ea;border-radius:12px;padding:18px 14px;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(26,58,107,.06)}
+.port-card:active{border-color:#1a3a6b;transform:translateY(-2px)}
+.port-card .pi{font-size:24px;margin-bottom:8px}
+.port-card .pn{font-weight:800;font-size:17px;color:#111827;line-height:1.2}
+.port-card .pe{font-family:monospace;font-size:11px;color:#4b5563;margin-top:2px;font-weight:600}
+.port-card .pv{margin-top:10px;font-family:monospace;font-size:11px;color:#1a3a6b;background:#dce8f5;font-weight:700;padding:4px 10px;border-radius:4px;display:inline-block}
+.rec-list{padding:0 16px}
+.rec-item{background:#fff;border:1.5px solid #c0d4eb;border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.rv{font-size:16px;font-weight:800;color:#111827}
+.rm{font-size:12px;color:#4b5563;font-weight:600;margin-top:2px;font-family:monospace}
+.rbadge{font-size:10px;padding:4px 9px;border-radius:20px;font-family:monospace;font-weight:700}
+.rbadge.signed{background:#dcfce7;color:#166534;border:1.5px solid #166534}
+.rbadge.draft{background:rgba(245,200,66,.12);color:#92400e;border:1px solid rgba(245,200,66,.3)}
+.empty{text-align:center;padding:30px 20px;color:#6b7280;font-size:13px}
+.tab-bar{display:flex;gap:4px;padding:12px 16px 0;border-bottom:3px solid #1a3a6b;overflow-x:auto;background:#fff;scrollbar-width:none;box-shadow:0 2px 8px rgba(26,58,107,.10)}
+.tab-btn{padding:8px 14px;border-radius:8px 8px 0 0;border:none;background:transparent;color:#6b7280;font-size:12px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;font-family:inherit;flex-shrink:0;line-height:1.4;text-align:center;margin-bottom:-3px}
+.tab-btn.active{color:#1a3a6b;border-bottom-color:#1a3a6b;font-weight:800}
+.prog-wrap{padding:10px 16px 6px}
+.prog-info{display:flex;justify-content:space-between;font-size:11px;color:#374151;margin-bottom:5px;font-family:monospace}
+.prog-bar{height:7px;background:#c7d8f0;border-radius:3px}
+.prog-fill{height:100%;background:linear-gradient(90deg,#1a3a6b,#2d5fa8);border-radius:3px;transition:width .4s}
+.tab-content{display:none;flex-direction:column;gap:16px;padding:16px}
+.scard{background:#fff;border:1.5px solid #c0d4eb;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(26,58,107,.06)}
+.scard-header{background:#dce8f5;padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:2px solid #b8d0ea}
+.scard-header h3{font-size:14px;font-weight:700;color:#1a3a6b}
+.scard-body{padding:14px 16px;display:flex;flex-direction:column;gap:12px}
+.frow{display:flex;flex-direction:column;gap:5px}
+.frow label{font-size:13px;color:#1e3a5f;font-weight:700}
+.frow.inline{flex-direction:row;gap:10px;align-items:flex-end}
+.frow.inline>*{flex:1;display:flex;flex-direction:column;gap:5px}
+.rgroup{display:flex;gap:6px;flex-wrap:wrap}
+.rbtn{padding:9px 16px;border-radius:20px;border:2px solid #93b4d4;background:#f0f6ff;color:#1f2937;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;user-select:none;white-space:nowrap}
+.rbtn.active{border-color:#1a3a6b;background:#1a3a6b;color:#fff;font-weight:700}
+.ci{display:flex;align-items:flex-start;gap:11px;padding:11px 0;border-bottom:1px solid #e5eaf3;cursor:pointer;user-select:none}
+.cbox{width:28px;height:28px;min-width:28px;border-radius:6px;border:2.5px solid #93b4d4;background:#f0f6ff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;margin-top:1px;transition:all .2s}
+.cbox.checked{background:#166534;border-color:#166534;color:#fff}
+.cbox.na{background:#fee2e2;border-color:#991b1b;color:#991b1b;font-size:9px;font-weight:700}
+.clbl{font-size:14px;line-height:1.6;color:#111827;font-weight:500;flex:1}
+.clbl.ck{color:#9ca3af;text-decoration:line-through}
+.tug-table{width:100%;border-collapse:collapse;font-size:12px}
+.tug-table th{text-align:left;padding:8px;font-family:monospace;font-size:11px;color:#1a3a6b;font-weight:700;border-bottom:2px solid #1a3a6b;background:#dce8f5}
+.tug-table td{padding:9px 8px;border-bottom:1px solid #e5eaf3;color:#111827;font-size:12px;font-weight:500}
+.tsel{padding:7px;font-size:13px;border:2px solid #93b4d4;border-radius:6px;background:#f8faff;color:#111827;font-weight:600;width:100%}
+.sig-area{border:2px dashed #93b4d4;border-radius:10px;background:#f8faff;overflow:hidden}
+.sig-lbl{font-size:12px;color:#1f2937;font-weight:700;padding:8px 12px;border-bottom:1px solid #e5eaf3;background:#eef4ff;display:flex;justify-content:space-between;align-items:center}
+.sig-clr{font-size:11px;padding:3px 10px;background:#fee2e2;border:1px solid #991b1b;color:#991b1b;border-radius:6px;cursor:pointer;font-family:inherit}
+canvas{width:100%;height:130px;display:block;cursor:crosshair;touch-action:none;background:rgba(0,0,0,.03)}
+.action-bar{padding:16px;display:flex;gap:10px;position:sticky;bottom:0;background:linear-gradient(transparent,#e8eef6 40%);z-index:50;padding-top:30px}
+.btn{flex:1;padding:14px;border-radius:12px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;border:none}
+.btn-p{background:linear-gradient(135deg,#1a3a6b,#0f2550);color:#fff}
+.btn-s{background:#f0f6ff;border:1.5px solid #93b4d4;color:#1a3a6b}
+.btn-ok{background:linear-gradient(135deg,#166534,#14532d);color:#fff}
+.btn-d{background:#fee2e2;border:1.5px solid #991b1b;color:#991b1b}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#166534;color:#fff;padding:11px 22px;border-radius:50px;font-weight:700;font-size:13px;z-index:9999;white-space:nowrap;opacity:0;transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.cert-doc{font-family:'Times New Roman',Times,serif;font-size:10px;color:#111;background:#fff;padding:10px;border:1px solid #ccc;border-radius:6px;margin-bottom:8px}
+.cert-doc h2{text-align:center;font-size:12px;font-weight:700;text-decoration:underline;letter-spacing:1.5px;margin-bottom:6px}
+.cert-doc table{width:100%;border-collapse:collapse;margin-bottom:3px}
+.cert-doc td{border:1px solid #555;padding:2px 3px;vertical-align:middle}
+.clb{font-weight:700;font-size:10px}
+.ctime{width:100%;font-size:10px;padding:2px 3px;border:1px solid #aaa;border-radius:2px;background:#fff;color:#111;font-family:inherit}
+.cdiv{text-align:center;color:#999;font-size:7px;margin:2px 0}
+.rec-detail{padding:16px;display:flex;flex-direction:column;gap:10px}
+.rrow{display:flex;gap:8px;font-size:13px;padding-bottom:5px;border-bottom:1px solid #e5eaf3}
+.rrow .rl{color:#4b5563;min-width:100px}
+.rrow .rv2{font-weight:600;color:#111827}
+.cert-req{border:1px solid #e53e3e!important;background:#fff5f5!important}
+@media print{
+  .cert-req{border:none!important;background:transparent!important;color:#000!important}
+  .no-print{display:none!important;visibility:hidden!important;width:0!important;height:0!important;overflow:hidden!important}
+  @page{size:A4;margin:10mm}
+  .app-header,.tab-bar,.prog-wrap,.action-bar,.scard-header{display:none!important}
+  #tab-cert{display:block!important;padding:0!important}
+  .scard{box-shadow:none!important;border:none!important}
+  .scard-body{padding:0!important}
+  body{background:#fff!important}
+  .cert-doc{font-size:10pt!important;padding:12px!important;border:1px solid #aaa!important;margin-bottom:10px!important;page-break-inside:avoid}
+  .cert-doc h2{font-size:13pt!important;margin-bottom:8px!important}
+  .cert-doc table{font-size:10pt!important}
+  .cert-doc td{padding:5px 6px!important}
+  .cert-doc td[style*="height:240px"]{height:240px!important;min-height:240px!important}
+  .cert-doc canvas{height:220px!important;min-height:220px!important;display:block!important}
+  select{-webkit-appearance:none;border:none!important;background:transparent!important;font-weight:700}
+  input[type=number],input[type=text]{border:none!important;background:transparent!important}
+  .red-border{border:none!important;box-shadow:none!important}
+  textarea{border:none!important;background:transparent!important;resize:none}
+  button{display:none!important}
+  .tip-btn{display:none!important}
+  .tip-wrap{display:none!important}
+  canvas{border:1px dashed #ccc!important}
+  .print-hide-cv{display:none!important}
+  .print-sig-img{display:block!important}
+  .cert-surcharge{font-size:8pt!important}
+  .cdiv{margin:6px 0!important}
+  #cert-zoom-wrap{overflow:visible!important;background:none!important;padding:0!important}
+  #cert-zoom-inner{transform:none!important;width:100%!important;padding:0!important}
+  .pinch-hint{display:none!important}
+}
+
+.tip-wrap{display:none;margin-top:4px;background:#fffbea;border:1px solid #d4a800;border-radius:5px;padding:5px 7px;font-size:8px;color:#333;line-height:1.6;white-space:pre-wrap;word-break:keep-all}
+.tip-wrap.open{display:block}
+.tip-btn{background:none;border:1px solid #aaa;border-radius:50%;width:13px;height:13px;font-size:8px;line-height:1;cursor:pointer;color:#555;padding:0;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;font-family:inherit;vertical-align:middle;margin-left:1px}
+.tip-btn:active{background:#f0f0f0}
+
+.del-modal-bg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:9000;align-items:center;justify-content:center}
+.del-modal-bg.show{display:flex}
+.del-modal{background:#fff;border-radius:16px;padding:28px 22px 20px;max-width:320px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.25);text-align:center}
+.del-modal .del-icon{font-size:40px;margin-bottom:12px}
+.del-modal h3{font-size:18px;font-weight:900;color:#991b1b;margin-bottom:8px}
+.del-modal p{font-size:14px;color:#4b5563;line-height:1.7;margin-bottom:20px}
+.del-modal .del-btns{display:flex;gap:10px}
+.del-modal .del-btns button{flex:1;padding:13px;border-radius:10px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;border:none}
+.del-cancel{background:#f0f6ff;color:#1a3a6b;border:2px solid #93b4d4!important}
+.del-confirm{background:linear-gradient(135deg,#991b1b,#7f1d1d);color:#fff}
+
+#cert-zoom-wrap{overflow:auto;-webkit-overflow-scrolling:touch;width:100%;background:#d0d8e8;padding:8px 0;position:relative}
+#cert-zoom-inner{transform-origin:top left;width:100%;padding:0 8px;will-change:transform}
+.pinch-hint{text-align:center;font-size:11px;color:#1a3a6b;background:rgba(220,232,245,.9);padding:5px 0;font-weight:600;letter-spacing:.03em;user-select:none}
+/* 두 번째 print 블록은 위로 통합됨 */
+/* ── 도선예보 ── */
+.fc-wrap{padding:0 16px 4px}
+.fc-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.fc-refresh{background:#f0f6ff;border:1.5px solid #93b4d4;color:#1a3a6b;font-size:12px;font-weight:700;padding:5px 13px;border-radius:20px;cursor:pointer;font-family:inherit}
+.fc-refresh:active{background:#dce8f5}
+.fc-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:8px;padding-bottom:2px}
+.fc-tab{padding:5px 13px;border-radius:16px;border:1.5px solid #93b4d4;background:#f0f6ff;color:#374151;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0}
+.fc-tab.active{background:#1a3a6b;border-color:#1a3a6b;color:#fff}
+.fc-item{background:#fff;border:1.5px solid #c0d4eb;border-radius:10px;padding:11px 13px;margin-bottom:7px;cursor:pointer;transition:border-color .15s}
+.fc-item:active{border-color:#1a3a6b;background:#f0f6ff}
+.fc-item.st-done{border-color:#86efac;background:#f0fdf4}
+.fc-item.st-cancel{opacity:.55}
+.fc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.fc-vessel{font-size:15px;font-weight:800;color:#111827;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fc-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:12px;white-space:nowrap;margin-left:8px;flex-shrink:0}
+.fc-badge.s0{background:rgba(245,200,66,.15);color:#92400e;border:1px solid rgba(245,200,66,.4)}
+.fc-badge.s1{background:#dbeafe;color:#1e40af;border:1px solid #93c5fd}
+.fc-badge.s2{background:#dcfce7;color:#166534;border:1px solid #86efac}
+.fc-badge.s3{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+.fc-badge.s9{background:#f3f4f6;color:#374151;border:1px solid #d1d5db}
+.fc-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-family:monospace;font-size:11px;color:#4b5563}
+.fc-time{font-weight:800;color:#1a3a6b;font-size:14px}
+.fc-op{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700}
+.fc-op.arr{background:#dbeafe;color:#1e40af}
+.fc-op.dep{background:#fef9c3;color:#713f12}
+.fc-op.sft{background:#ede9fe;color:#5b21b6}
+.fc-sub{font-size:11px;color:#6b7280;margin-top:3px;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fc-hint{font-size:10px;color:#93b4d4;font-weight:600;margin-top:4px;text-align:right}
+.fc-empty{text-align:center;padding:18px;color:#6b7280;font-size:13px;background:#fff;border-radius:10px;border:1.5px solid #c0d4eb}
+.fc-err{background:#fff5f5;border:1.5px solid #fca5a5;border-radius:10px;padding:12px 14px;font-size:12px;color:#991b1b;font-weight:600;line-height:1.7}
+.fc-loading{text-align:center;padding:18px;color:#1a3a6b;font-size:13px;font-weight:600}
+/* 예보 연동 모달 */
+.fc-modal-bg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:9100;align-items:flex-end;justify-content:center}
+.fc-modal-bg.show{display:flex}
+.fc-modal{background:#fff;border-radius:16px 16px 0 0;padding:20px 18px 30px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto}
+.fc-modal h3{font-size:16px;font-weight:900;color:#1a3a6b;margin-bottom:4px}
+.fc-modal .fc-modal-ship{font-size:20px;font-weight:800;color:#111827;margin-bottom:14px}
+.fc-modal-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #e5eaf3;font-size:14px}
+.fc-modal-row .lbl{color:#4b5563;font-weight:600}
+.fc-modal-row .val{font-weight:700;color:#111827;text-align:right;max-width:60%}
+.fc-modal-btns{display:flex;gap:10px;margin-top:18px}
+.fc-modal-btns button{flex:1;padding:13px;border-radius:10px;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;border:none}
+.fc-btn-cancel{background:#f0f6ff;color:#1a3a6b;border:2px solid #93b4d4!important}
+.fc-btn-apply{background:linear-gradient(135deg,#1a3a6b,#0f2550);color:#fff}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="del-modal-bg" id="del-modal-bg">
+  <div class="del-modal">
+    <div class="del-icon">&#128465;&#65039;</div>
+    <h3>정말 삭제하시겠습니까?</h3>
+    <p>삭제된 기록은 <strong>복구할 수 없습니다.</strong><br>한 번 더 확인해 주세요.</p>
+    <div class="del-btns">
+      <button class="del-cancel" onclick="closeDelModal()">취소</button>
+      <button class="del-confirm" onclick="confirmDelete()">삭제</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 예보 연동 모달 -->
+<div class="fc-modal-bg" id="fc-modal-bg">
+  <div class="fc-modal">
+    <div class="fc-modal h3" style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:2px">도선예보 연동</div>
+    <div class="fc-modal-ship" id="fc-modal-vessel"></div>
+    <div id="fc-modal-rows"></div>
+    <div class="fc-modal-btns">
+      <button class="fc-btn-cancel" onclick="closeFcModal()">취소</button>
+      <button class="fc-btn-apply" onclick="applyForecast()">&#9989; MPX 작성 시작</button>
+    </div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="screen active" id="screen-home">
+  <div class="home-hero">
+    <div class="assoc">KOREA MARITIME PILOTS' ASSOCIATION</div>
+    <h1>MASTER-PILOT<br>INFORMATION EXCHANGE</h1>
+    <div class="solas">SOLAS Reg. V/23 &middot; IMO Res. A.1045(27)</div>
+    <div style="font-size:10px;color:#93b4d4;margin-top:4px;letter-spacing:0.03em">© 2026 대산항 도선사회 · T.W. HONG</div>
+    <div id="home-clock"></div>
+  </div>
+  <div class="datetime-strip">
+    <span class="dv" id="home-date"></span>
+    <span class="tv" id="home-time2"></span>
+  </div>
+  <div style="background:#1a2a3a;padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="background:rgba(255,255,255,.12);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px">&#128196;</div>
+      <div>
+        <div style="color:#fff;font-size:15px;font-weight:800">도선예보현황</div>
+        <div style="color:rgba(255,255,255,.55);font-size:11px;font-weight:600">유한회사 선진해운</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button onclick="fcDateShift(-1)" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:16px;padding:4px 11px;border-radius:8px;cursor:pointer;font-family:inherit">&#9664;</button>
+      <div style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:12px;font-weight:700;padding:5px 8px;border-radius:8px;font-family:monospace;min-width:88px;text-align:center" id="fc-date-label">--.--.--</div>
+      <button onclick="fcDateShift(1)" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;font-size:16px;padding:4px 11px;border-radius:8px;cursor:pointer;font-family:inherit">&#9654;</button>
+      <button class="fc-refresh" id="fc-refresh-btn" onclick="loadForecast()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff">&#8635;</button>
+    </div>
+  </div>
+  <div class="sec-label">&#128202; 도선예보 / PILOT FORECAST</div>
+  <div class="fc-wrap">
+    <div id="fc-loading" class="fc-loading" style="display:none">불러오는 중...</div>
+    <div id="fc-tabs" class="fc-tabs" style="display:none"></div>
+    <div id="fc-list"></div>
+  </div>
+  <div class="sec-label">&#9875; 항구 선택 / SELECT PORT</div>
+  <div class="port-grid">
+    <div class="port-card" onclick="selectPort('boryeong')"><div class="pi">&#127981;</div><div class="pn">보령</div><div class="pe">BORYEONG</div><div class="pv">VHF Ch.69</div></div>
+    <div class="port-card" onclick="selectPort('daesan')"><div class="pi">&#128718;</div><div class="pn">대산</div><div class="pe">DAESAN</div><div class="pv">VHF Ch.12</div></div>
+    <div class="port-card" onclick="selectPort('dangjin')"><div class="pi">&#9889;</div><div class="pn">당진</div><div class="pe">DANGJIN</div><div class="pv">VHF Ch.12</div></div>
+    <div class="port-card" onclick="selectPort('taean')"><div class="pi">&#127754;</div><div class="pn">태안</div><div class="pe">TAEAN</div><div class="pv">VHF Ch.12</div></div>
+  </div>
+  <div style="padding:20px 16px 4px">
+    <button onclick="showGuide()" style="width:100%;padding:14px;border-radius:12px;border:2px solid #c53030;background:#fff5f5;color:#c53030;font-size:16px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">&#128218; 사용설명서 보기</button>
+  </div>
+  <div class="sec-label" style="padding-top:20px">&#128203; 최근 기록 / RECENT RECORDS (<span id="rec-count">0</span>)</div>
+  <div class="rec-list" id="recent-records"><div class="empty">저장된 기록 없음</div></div>
+</div>
+
+<!-- FORM -->
+<div class="screen" id="screen-form">
+  <div class="app-header">
+    <button class="back-btn" onclick="goHome()">&#8592; 홈</button>
+    <h2>MPX 정보교환</h2>
+    <span class="port-badge" id="form-port-badge">PORT</span>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-info"><span>완료율</span><span id="prog-pct">0%</span></div>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showTab('tab-vessel')">&#128674; 선박정보</button>
+    <button class="tab-btn" onclick="showTab('tab-pilot')">&#128100; 도선정보</button>
+    <button class="tab-btn" onclick="showTab('tab-checklist')">&#9989; 체크리스트</button>
+    <button class="tab-btn" onclick="showTab('tab-tugs')">&#128676; 예선</button>
+    <button class="tab-btn" onclick="showTab('tab-mooring')">&#9875; Mooring</button>
+    <button class="tab-btn" onclick="showTab('tab-sign')">&#9997;&#65039; 서명</button>
+    <button class="tab-btn" onclick="showTab('tab-cert')">&#128220; 증서</button>
+  </div>
+
+  <!-- 선박정보 -->
+  <div id="tab-vessel" class="tab-content" style="display:flex">
+    <div class="scard">
+      <div class="scard-header"><h3>&#128197; 일시 &amp; 작업</h3></div>
+      <div class="scard-body">
+        <div class="frow inline">
+          <div><label>날짜 (Date)</label><input type="date" id="f-date" onchange="autoCheckHoliday(); autoCheckNight();"></div>
+          <div><label>시간 (Pilot On Board)</label><input type="time" id="f-time" lang="en-GB"></div>
+        </div>
+        <div class="frow"><label>작업 구분 (Section of Operation)</label>
+          <div class="rgroup" id="rg-op">
+            <div class="rbtn active" data-val="ARRIVAL" onclick="setRadio('rg-op',this);updateBerths()">입항 (Arrival)</div>
+            <div class="rbtn" data-val="DEPARTURE" onclick="setRadio('rg-op',this);updateBerths()">출항 (Departure)</div>
+            <div class="rbtn" data-val="SHIFT" onclick="setRadio('rg-op',this);updateBerths()">이동 (Shifting)</div>
+          </div>
+        </div>
+        <div id="row-from" class="frow" style="display:none"><label>출발 Pilot Station</label><select id="f-from"><option value="">-- 선택 --</option></select></div>
+        <div id="row-sf" class="frow" style="display:none"><label>출발 부두</label><select id="f-sf"><option value="">-- 선택 --</option></select></div>
+        <div id="row-berth" class="frow"><label id="lbl-berth">접안 부두 (Berth)</label><select id="f-berth"><option value="">-- 선택 --</option></select></div>
+        <div id="row-st" class="frow" style="display:none"><label>도착 부두</label><select id="f-st"><option value="">-- 선택 --</option></select></div>
+        <div id="row-to" class="frow" style="display:none"><label>목적지 Pilot Station</label><select id="f-to"><option value="">-- 선택 --</option></select></div>
+      </div>
+    </div>
+    <div class="scard">
+      <div class="scard-header"><h3>&#128674; 선박 정보</h3></div>
+      <div class="scard-body">
+        <div class="frow"><label>선박명 (Vessel Name)</label><input type="text" id="f-vessel" placeholder="M/V ..."></div>
+        <div class="frow"><label>Owner / Operator</label>
+          <input type="text" id="f-owner-c" placeholder="Owner / Operator (선사명)" oninput="syncOA()">
+          <input type="hidden" id="f-owner" value="__d__">
+        </div>
+        <div class="frow"><label>Local Agency</label>
+          <input type="text" id="f-agency-c" placeholder="Local Agency (대리점)" oninput="syncOA()">
+          <input type="hidden" id="f-agency" value="__d__">
+        </div>
+        <div class="frow inline">
+          <div><label>선적국 (Flag)</label><input type="text" id="f-flag" placeholder="Panama"></div>
+          <div><label>선적항 (Registry)</label><input type="text" id="f-registry" placeholder="Panama" style="border:2px solid #e53e3e!important;background:#fff5f5!important"></div>
+        </div>
+        <div class="frow inline">
+          <div><label>호출부호 (Call Sign)</label><input type="text" id="f-callsign" placeholder="ABCD1"></div>
+          <div><label>선종 (Ship Type)</label>
+            <select id="f-shiptype" class="red-border" onchange="autoCheckDG()" style="border:2px solid #e53e3e!important;border-radius:8px;background:#fff5f5!important"><option value="">선택...</option><option>Bulk Carrier</option><option>Tanker (Oil)</option><option>Tanker (Chemical)</option><option>LNG Carrier</option><option>LPG Carrier</option><option>Container</option><option>General Cargo</option><option>VLCC</option><option>Car Carrier</option><option>Other</option></select>
+          </div>
+        </div>
+        <div class="frow inline">
+          <div><label>LOA (m)</label><input type="number" id="f-loa" placeholder="300"></div>
+          <div><label>Beam (m)</label><input type="number" id="f-beam" placeholder="50"></div>
+        </div>
+        <div class="frow inline">
+          <div><label>Fwd Draft (m)</label><input type="number" step="0.1" id="f-draftf" placeholder="12.5"></div>
+          <div><label>Aft Draft (m)</label><input type="number" step="0.1" id="f-drafta" placeholder="13.2"></div>
+        </div>
+        <div class="frow inline">
+          <div><label>DWT (MT)</label><input type="number" id="f-dwt" placeholder="150000"></div>
+          <div><label>GRT</label><input type="number" id="f-grt" placeholder="85000"></div>
+        </div>
+        <div class="frow inline">
+          <div><label>Gyro Compass Error</label><input type="number" step="0.1" id="f-gyro" placeholder="0.0" style="width:100%"></div>
+          <div><label>E / W</label>
+            <div class="rgroup" id="rg-gyroew">
+              <div class="rbtn active" data-val="E" onclick="setRadio('rg-gyroew',this)">E</div>
+              <div class="rbtn" data-val="W" onclick="setRadio('rg-gyroew',this)">W</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="scard">
+      <div class="scard-header"><h3>&#9881;&#65039; 기관/추진 (Engine/Propulsion)</h3></div>
+      <div class="scard-body">
+        <div class="frow"><label>기관 종류 (Type of Engine)</label>
+          <div class="rgroup" id="rg-engtype">
+            <div class="rbtn active" data-val="DIESEL" onclick="setRadio('rg-engtype',this)">Diesel Engine (Motor)</div>
+            <div class="rbtn" data-val="ELECTRIC" onclick="setRadio('rg-engtype',this)">Electric Motor</div>
+            <div class="rbtn" data-val="TURBINE" onclick="setRadio('rg-engtype',this)">Turbine</div>
+          </div>
+        </div>
+        <div class="frow inline">
+          <div><label>Output Value</label><input type="number" id="f-engpwr" placeholder="0" min="0"></div>
+          <div><label>Unit</label>
+            <div class="rgroup" id="rg-engunit">
+              <div class="rbtn active" data-val="kW" onclick="setRadio('rg-engunit',this)">kW</div>
+              <div class="rbtn" data-val="HP" onclick="setRadio('rg-engunit',this)">HP</div>
+            </div>
+          </div>
+        </div>
+        <div class="frow"><label>추진 형태 (Type of Propulsion)</label>
+          <div class="rgroup" id="rg-prop">
+            <div class="rbtn active" data-val="FPP" onclick="setRadio('rg-prop',this)">FPP</div>
+            <div class="rbtn" data-val="CPP" onclick="setRadio('rg-prop',this)">CPP</div>
+            <div class="rbtn" data-val="AZIPOD" onclick="setRadio('rg-prop',this)">Azipod</div>
+            <div class="rbtn" data-val="DE" onclick="setRadio('rg-prop',this)">Diesel Elec</div>
+          </div>
+        </div>
+        <div class="frow"><label>프로펠러 회전 (Rotation of Propeller)</label>
+          <div class="rgroup" id="rg-rot">
+            <div class="rbtn active" data-val="RH" onclick="setRadio('rg-rot',this)">R/H</div>
+            <div class="rbtn" data-val="LH" onclick="setRadio('rg-rot',this)">L/H</div>
+            <div class="rbtn" data-val="TWIN_OUT" onclick="setRadio('rg-rot',this)">Twin Outward</div>
+            <div class="rbtn" data-val="TWIN_IN" onclick="setRadio('rg-rot',this)">Twin Inward</div>
+          </div>
+        </div>
+        <div class="frow inline">
+          <div><label>Engine Notice (min)</label><input type="number" id="f-eng" placeholder="30"></div>
+          <div><label>Air Start Limit</label><input type="number" id="f-air" placeholder="6"></div>
+        </div>
+        <div class="frow inline">
+          <div><label>Bow Thruster (kW)</label><input type="number" id="f-bow" placeholder="2200"></div>
+          <div><label>Stern Thruster (kW)</label><input type="number" id="f-stern" placeholder="0"></div>
+        </div>
+        <div class="frow">
+          <label>Astern Power</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" id="f-astern" placeholder="100" min="0" max="100" style="width:50%">
+            <span style="font-size:14px;font-weight:600;color:#111">% of Ahead Power</span>
+          </div>
+        </div>
+        <div class="frow"><label>기관 결함 (Engine Deficiency)</label><textarea id="f-engdef" placeholder="없으면 NIL"></textarea></div>
+      </div>
+    </div>
+    <div class="scard">
+      <div class="scard-header"><h3>&#9875; 앵커 (Anchor)</h3></div>
+      <div class="scard-body">
+        <div class="frow"><label>앵커 준비 상태 (Readiness)</label>
+          <div class="rgroup" id="rg-anc">
+            <div class="rbtn active" data-val="BOTH" onclick="setRadio('rg-anc',this)">Both Ready</div>
+            <div class="rbtn" data-val="PORT" onclick="setRadio('rg-anc',this)">Port Only</div>
+            <div class="rbtn" data-val="STBD" onclick="setRadio('rg-anc',this)">Stbd Only</div>
+            <div class="rbtn" data-val="NOT" onclick="setRadio('rg-anc',this)">Not Ready</div>
+          </div>
+        </div>
+        <div class="frow"><label>투묘 방법 (Method of dropping anchor)</label>
+          <div class="rgroup" id="rg-drop">
+            <div class="rbtn active" data-val="GRAVITY" onclick="setRadio('rg-drop',this)">By Gravity</div>
+            <div class="rbtn" data-val="WALKOUT" onclick="setRadio('rg-drop',this)">Walk out</div>
+          </div>
+        </div>
+        <div class="frow"><label>선박 결함 (Ship's deficiency)</label><textarea id="f-vesdef" placeholder="없으면 NIL"></textarea></div>
+      </div>
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-s" onclick="goHome()">취소</button>
+      <button class="btn btn-p" onclick="showTab('tab-pilot')">다음: 도선정보 &rarr;</button>
+    </div>
+  </div>
+
+  <!-- 도선정보 -->
+  <div id="tab-pilot" class="tab-content">
+    <div class="scard">
+      <div class="scard-header"><h3>&#128100; 도선사 정보</h3></div>
+      <div class="scard-body">
+        <div class="frow"><label>Main Pilot</label>
+          <select id="f-pilot" onchange="syncCertPilot()">
+            <option value="">-- 선택 --</option>
+            <option>I.G. KANG / KG (강일권)</option><option>J.K. JUNG / JK (정준권)</option>
+            <option>T.C. SON / ST (손태창)</option><option>G.J. PARK / PG (박근주)</option>
+            <option>M.C. AN / MC (안문철)</option><option>M.B. GO / GB (고민보)</option>
+            <option>M.S. GIM / GM (김미수)</option><option>S.E. LEE / LE (이성언)</option>
+            <option>G.H. KIM / GH (김곤한)</option><option>K.W. CHIN / KW (진기원)</option>
+            <option>M.Y. KWON / MY (권민용)</option><option>S.H. LIM / LK (임수훈)</option>
+            <option>K.Y. LIM / KY (임광룡)</option><option>J.Y. GU / JY (구진용)</option>
+            <option>S.H. KIM / KS (김승한)</option><option>K.H. PARK / PK (박기홍)</option>
+            <option>Y.M. KIM / YM (김영면)</option><option>T.W. HONG / TW (홍태원)</option>
+            <option>S.H. LEE / LH (이승화)</option><option>J.O. PARK / JO (박지욱)</option>
+            <option>C.U. OH / OC (오창욱)</option><option>T.K. LEE / LT (이태권)</option>
+          </select>
+        </div>
+
+        <div class="frow"><label>Co Pilot</label>
+          <select id="f-copilot" onchange="syncCertPilot()">
+            <option value="">-- 없음 --</option>
+            <option>I.G. KANG / KG (강일권)</option><option>J.K. JUNG / JK (정준권)</option>
+            <option>T.C. SON / ST (손태창)</option><option>G.J. PARK / PG (박근주)</option>
+            <option>M.C. AN / MC (안문철)</option><option>M.B. GO / GB (고민보)</option>
+            <option>M.S. GIM / GM (김미수)</option><option>S.E. LEE / LE (이성언)</option>
+            <option>G.H. KIM / GH (김곤한)</option><option>K.W. CHIN / KW (진기원)</option>
+            <option>M.Y. KWON / MY (권민용)</option><option>S.H. LIM / LK (임수훈)</option>
+            <option>K.Y. LIM / KY (임광룡)</option><option>J.Y. GU / JY (구진용)</option>
+            <option>S.H. KIM / KS (김승한)</option><option>K.H. PARK / PK (박기홍)</option>
+            <option>Y.M. KIM / YM (김영면)</option><option>T.W. HONG / TW (홍태원)</option>
+            <option>S.H. LEE / LH (이승화)</option><option>J.O. PARK / JO (박지욱)</option>
+            <option>C.U. OH / OC (오창욱)</option><option>T.K. LEE / LT (이태권)</option>
+          </select>
+        </div>
+
+
+
+      </div>
+    </div>
+    <div class="scard">
+      <div class="scard-header"><h3>&#127919; 도선 계획</h3></div>
+      <div class="scard-body">
+        <div class="frow"><label>접안 방향</label>
+          <div class="rgroup" id="rg-side">
+            <div class="rbtn active" data-val="PORT" onclick="setRadio('rg-side',this)">좌현 (Port)</div>
+            <div class="rbtn" data-val="STBD" onclick="setRadio('rg-side',this)">우현 (Stbd)</div>
+            <div class="rbtn" data-val="SPM" onclick="setRadio('rg-side',this)">SPM</div>
+          </div>
+        </div>
+        <div class="frow"><label>이안 방향</label>
+          <div class="rgroup" id="rg-unside">
+            <div class="rbtn active" data-val="PORT" onclick="setRadio('rg-unside',this)">좌현 (Port)</div>
+            <div class="rbtn" data-val="STBD" onclick="setRadio('rg-unside',this)">우현 (Stbd)</div>
+            <div class="rbtn" data-val="SPM" onclick="setRadio('rg-unside',this)">SPM</div>
+          </div>
+        </div>
+        <div class="frow"><label>Passage Plan</label><textarea id="f-passage" placeholder="외항 &rarr; 대기구역 &rarr; 부두..."></textarea></div>
+
+      </div>
+    </div>
+
+    <div class="scard">
+      <div class="scard-header"><h3>&#128225; 통신</h3></div>
+      <div class="scard-body">
+        <div class="frow inline">
+          <div><label>Main VHF Ch.</label><input type="text" id="f-vhf" placeholder="Ch.12"></div>
+          <div><label>Working Ch.</label><input type="text" id="f-wvhf" placeholder="Ch.16"></div>
+        </div>
+
+      </div>
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-s" onclick="showTab('tab-vessel')">&#8592; 이전</button>
+      <button class="btn btn-p" onclick="showTab('tab-checklist')">다음: 체크리스트 &rarr;</button>
+    </div>
+  </div>
+
+  <!-- 체크리스트 -->
+  <div id="tab-checklist" class="tab-content">
+    <div class="scard"><div class="scard-header"><h3>&#128674; 선박 준비사항 / Ship's Requirements</h3></div><div class="scard-body" id="cl-ship"></div></div>
+    <div class="scard"><div class="scard-header"><h3>&#127925; 장비 설정 / Equipment Setup</h3></div><div class="scard-body" id="cl-equip"></div></div>
+    <div class="action-bar">
+      <button class="btn btn-s" onclick="showTab('tab-pilot')">&#8592; 이전</button>
+      <button class="btn btn-p" onclick="showTab('tab-tugs')">다음: 예선 &rarr;</button>
+    </div>
+  </div>
+
+  <!-- 예선 -->
+  <div id="tab-tugs" class="tab-content">
+    <div class="scard">
+      <div class="scard-header"><h3>&#128676; 투입 예선 수</h3></div>
+      <div class="scard-body">
+        <div class="frow"><label>예선 수</label>
+          <div class="rgroup" id="rg-tc">
+            <div class="rbtn active" data-val="1" onclick="setRadio('rg-tc',this)">1척</div>
+            <div class="rbtn" data-val="2" onclick="setRadio('rg-tc',this)">2척</div>
+            <div class="rbtn" data-val="3" onclick="setRadio('rg-tc',this)">3척</div>
+            <div class="rbtn" data-val="4" onclick="setRadio('rg-tc',this)">4척</div>
+            <div class="rbtn" data-val="5" onclick="setRadio('rg-tc',this)">5척</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="scard">
+      <div class="scard-header"><h3 id="tug-title">가용 예선 목록</h3></div>
+      <div class="scard-body" style="padding:8px;overflow-x:auto"><table class="tug-table" id="tug-table"></table></div>
+    </div>
+    <div class="scard">
+      <div class="scard-header"><h3>&#9875; Ship's Bollard Pull</h3></div>
+      <div class="scard-body">
+        <div class="frow inline">
+          <div><label>Forward (MT)</label><input type="number" id="f-bp-fwd" placeholder="0" step="0.1" min="0"></div>
+          <div><label>Aft (MT)</label><input type="number" id="f-bp-aft" placeholder="0" step="0.1" min="0"></div>
+        </div>
+      </div>
+    </div>
+    <div class="scard">
+      <div class="scard-header"><h3>&#128221; 예선 메모</h3></div>
+      <div class="scard-body">
+        <div class="frow"><label>배치 특이사항</label><textarea id="f-tugnotes" placeholder="예: Tug 1 &rarr; Forward Center Lead"></textarea></div>
+        <div class="frow"><label>계류 방식</label><select id="f-moor"><option>Conventional</option><option>Mediterranean</option><option>SBM / SPM</option><option>Alongside</option></select></div>
+      </div>
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-s" onclick="showTab('tab-checklist')">&#8592; 이전</button>
+      <button class="btn btn-p" onclick="showTab('tab-mooring')">다음: Mooring &rarr;</button>
+    </div>
+  </div>
+
+  <!-- Mooring Information -->
+  <div id="tab-mooring" class="tab-content">
+    <div class="scard">
+      <div class="scard-header"><h3>&#9875; Mooring Information</h3></div>
+      <div class="scard-body" style="padding:12px">
+        <div style="display:flex;gap:12px;align-items:flex-start;justify-content:center">
+
+          <!-- 선박 SVG -->
+          <div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center">
+            <svg id="moor-svg" width="88" height="390" viewBox="0 0 88 390" style="overflow:visible">
+              <defs>
+                <linearGradient id="shipGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#b8d4e8"/>
+                  <stop offset="100%" stop-color="#daeaf6"/>
+                </linearGradient>
+              </defs>
+              <!-- 선체 전체 - STERN 위 뾰족, BOW 아래 둥근 -->
+              <path d="M24,318 Q44,366 64,318 L64,78 Q64,42 44,34 Q24,42 24,78 Z" fill="url(#shipGrad)" stroke="#333" stroke-width="2.5"/>
+              <!-- Bridge 텍스트 -->
+              <text x="44" y="290" text-anchor="middle" font-size="9" font-weight="700" fill="#333">Bridge</text>
+              <!-- 중심선 -->
+              <line x1="44" y1="34" x2="44" y2="366" stroke="#bbb" stroke-width="0.8" stroke-dasharray="4,3"/>
+              <!-- Midship 가로선 -->
+              <line x1="24" y1="198" x2="64" y2="198" stroke="#333" stroke-width="2"/>
+              <text x="68" y="202" font-size="8" fill="#333" font-weight="700">Mid</text>
+              <!-- BOW 위 / STERN 아래 텍스트 -->
+              <text x="44" y="22" text-anchor="middle" font-size="10" font-weight="800" fill="#1a3a6b">BOW</text>
+              <text x="44" y="362" text-anchor="middle" font-size="10" font-weight="800" fill="#1a3a6b">STERN</text>
+              <!-- 라인 레이어 -->
+              <g id="moor-lines-port"></g>
+              <g id="moor-lines-stbd"></g>
+            </svg>
+          </div>
+
+          <!-- 입력 테이블 -->
+          <div style="flex:1;min-width:0;padding-top:50px">
+            <table style="width:100%;border-collapse:collapse;font-size:11px">
+              <colgroup><col style="width:36%"><col style="width:21%"><col style="width:21%"><col style="width:22%"></colgroup>
+              <tr style="background:#1a3a6b;color:#fff">
+                <td style="padding:5px 6px;font-weight:700;font-size:11px">Line</td>
+                <td style="padding:5px 4px;text-align:center;font-weight:700">Port</td>
+                <td style="padding:5px 4px;text-align:center;font-weight:700">Stbd</td>
+                <td style="padding:5px 4px;text-align:center;font-weight:700">Order</td>
+              </tr>
+              <tr style="background:#f0f6ff">
+                <td style="padding:5px 6px;font-weight:800;color:#1a3a6b;font-size:11px">Head Lines</td>
+                <td style="padding:3px 4px"><select id="ml-head-p" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-head-s" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-head-ord" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>-</option><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option><option>5th</option></select></td>
+              </tr>
+              <tr>
+                <td style="padding:5px 6px;color:#e07000;font-weight:600">Outer Breast</td>
+                <td style="padding:3px 4px"><select id="ml-obr-p" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-obr-s" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-obr-ord" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>-</option><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option><option>5th</option></select></td>
+              </tr>
+              <tr style="background:#f0f6ff">
+                <td style="padding:5px 6px;color:#e07000;font-weight:600">Breast</td>
+                <td style="padding:3px 4px"><select id="ml-br-p" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-br-s" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-br-ord" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>-</option><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option><option>5th</option></select></td>
+              </tr>
+              <tr>
+                <td style="padding:5px 6px;color:#e07000;font-weight:600">Inner Breast</td>
+                <td style="padding:3px 4px"><select id="ml-ibr-p" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-ibr-s" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-ibr-ord" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>-</option><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option><option>5th</option></select></td>
+              </tr>
+              <tr>
+                <td style="padding:5px 6px;color:#008000;font-weight:600">Fwd Spring</td>
+                <td style="padding:3px 4px"><select id="ml-fsp-p" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-fsp-s" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-fsp-ord" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>-</option><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option><option>5th</option></select></td>
+              </tr>
+              <tr style="background:#f0f6ff">
+                <td style="padding:5px 6px;color:#008000;font-weight:600">Aft Spring</td>
+                <td style="padding:3px 4px"><select id="ml-asp-p" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-asp-s" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-asp-ord" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>-</option><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option><option>5th</option></select></td>
+              </tr>
+              <tr>
+                <td style="padding:5px 6px;color:#e07000;font-weight:600">Inner Breast</td>
+                <td style="padding:3px 4px"><select id="ml-ibr2-p" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-ibr2-s" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-ibr2-ord" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>-</option><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option><option>5th</option></select></td>
+              </tr>
+              <tr style="background:#f0f6ff">
+                <td style="padding:5px 6px;color:#e07000;font-weight:600">Breast</td>
+                <td style="padding:3px 4px"><select id="ml-br2-p" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-br2-s" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-br2-ord" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>-</option><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option><option>5th</option></select></td>
+              </tr>
+              <tr>
+                <td style="padding:5px 6px;color:#e07000;font-weight:600">Outer Breast</td>
+                <td style="padding:3px 4px"><select id="ml-obr2-p" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-obr2-s" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-obr2-ord" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>-</option><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option><option>5th</option></select></td>
+              </tr>
+              <tr>
+                <td style="padding:5px 6px;font-weight:800;color:#1a3a6b;font-size:11px">Stern Lines</td>
+                <td style="padding:3px 4px"><select id="ml-stern-p" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-stern-s" onchange="drawMoorLines()" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>N/A</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></td>
+                <td style="padding:3px 4px"><select id="ml-stern-ord" style="width:100%;font-size:11px;padding:2px;border-radius:4px;border:1px solid #aaa"><option>-</option><option>1st</option><option>2nd</option><option>3rd</option><option>4th</option><option>5th</option></select></td>
+              </tr>
+            </table>
+            <!-- 범례 -->
+            <div style="margin-top:10px;font-size:10px;color:#555;line-height:2;display:flex;flex-wrap:wrap;gap:8px">
+              <span><span style="display:inline-block;width:22px;height:2.5px;background:#1a3a6b;vertical-align:middle;margin-right:3px"></span>Head/Stern</span>
+              <span><span style="display:inline-block;width:22px;height:2.5px;background:#e07000;vertical-align:middle;margin-right:3px"></span>Breast</span>
+              <span><span style="display:inline-block;width:22px;height:2.5px;background:#008000;vertical-align:middle;margin-right:3px"></span>Spring</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-s" onclick="showTab('tab-tugs')">&#8592; 이전</button>
+      <button class="btn btn-p" onclick="showTab('tab-sign')">다음: 서명 &rarr;</button>
+    </div>
+  </div>
+
+  <!-- 서명 -->
+  <div id="tab-sign" class="tab-content">
+    <div class="scard">
+      <div class="scard-header"><h3>&#9989; 완료 요약</h3></div>
+      <div class="scard-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px" id="sum-boxes"></div>
+        <div id="sum-msg" style="font-size:12px;padding:8px 10px;border-radius:6px;margin-top:4px"></div>
+      </div>
+    </div>
+    <div class="scard">
+      <div class="scard-header"><h3>&#9997;&#65039; 선장 서명 (MPX)</h3></div>
+      <div class="scard-body">
+        <p style="font-size:11px;color:#374151;line-height:1.6">본인은 MPX가 완료되었음을 확인하며 도선약관에 동의합니다.<br><span style="font-size:11px;color:#111827;font-weight:700">I confirm that the Master-Pilot information exchange has been completed and I agree to the pilotage terms and conditions.</span></p>
+        <div class="sig-area"><div class="sig-lbl">&#8594; Master's Signature <button class="sig-clr" onclick="clearSig('cv-master')">Clear</button></div><canvas id="cv-master"></canvas></div>
+      </div>
+    </div>
+    <div class="scard">
+      <div class="scard-header"><h3>&#9997;&#65039; 도선사 서명 (MPX)</h3></div>
+      <div class="scard-body">
+        <div class="sig-area"><div class="sig-lbl">&#8594; Pilot's Signature <button class="sig-clr" onclick="clearSig('cv-pilot')">Clear</button></div><canvas id="cv-pilot"></canvas></div>
+      </div>
+    </div>
+    <div class="action-bar">
+      <button class="btn btn-s" onclick="showTab('tab-tugs')">&#8592; 이전</button>
+      <button class="btn btn-p" onclick="showTab('tab-cert')">다음: 증서 &rarr;</button>
+    </div>
+  </div>
+
+  <!-- 증서 -->
+  <div id="tab-cert" class="tab-content">
+    <div class="scard">
+      <div class="scard-header" style="padding:8px 16px;display:flex;align-items:center;justify-content:space-between">
+        <h3>&#128220; Certificate of Pilotage &amp; Boat Service</h3>
+      </div>
+      <div class="pinch-hint" id="pinch-hint">&#129307; 두 손가락으로 펼치면 확대, 오므리면 축소</div>
+      <div id="cert-zoom-wrap">
+        <div id="cert-zoom-inner">
+      <div class="scard-body">
+
+        <div class="cert-doc">
+          <h2>CERTIFICATE OF PILOTAGE</h2>
+          <div style="text-align:right;margin-bottom:3px;font-size:10px;font-weight:700">DATE : <span id="cert-d1"></span></div>
+          <table>
+            <colgroup><col style="width:20%"><col style="width:30%"><col style="width:20%"><col style="width:30%"></colgroup>
+            <tr><td class="clb">Ship's name</td><td id="cv1" style="font-weight:700"></td><td class="clb">Ship's registry</td><td id="cf1"></td></tr>
+            <tr><td class="clb">Owner/Operator</td><td id="co1"></td><td class="clb">GRT(Int'l)</td><td id="cg1"></td></tr>
+            <tr><td class="clb">Local agency</td><td id="ca1"></td><td class="clb">Max. draft</td>
+              <td><div style="display:flex;align-items:center;gap:2px"><input type="number" step="0.01" id="c-draft" class="ctime red-border" placeholder="0.00" style="width:50px;border:2px solid red!important;border-radius:3px"><span style="font-size:10px;font-weight:700">m</span></div></td>
+            </tr>
+            <tr>
+              <td class="clb" rowspan="2" style="vertical-align:middle">Where piloted</td>
+              <td class="clb" style="font-size:10px;width:10%;white-space:nowrap">From</td>
+              <td colspan="2" style="padding:2px 4px;text-align:center"><span id="c-from" style="font-size:10px;font-weight:800;color:#111"></span></td>
+            </tr>
+            <tr>
+              <td class="clb" style="font-size:10px;white-space:nowrap">To</td>
+              <td colspan="2" style="padding:2px 4px;text-align:center"><span id="c-to" style="font-size:10px;font-weight:800;color:#111"></span></td>
+            </tr>
+            <tr>
+              <td class="clb">When piloted</td>
+              <td><div style="font-size:10px;font-weight:700;margin-bottom:1px">Ordered</div><input type="text" id="c-ord" class="ctime" placeholder="HH:MM" maxlength="5" style="width:100%;font-family:monospace;text-align:center"></td>
+              <td><div style="font-size:10px;font-weight:700;margin-bottom:1px">Commenced</div><input type="text" id="c-com" class="ctime cert-req" placeholder="HH:MM" maxlength="5" style="width:100%;font-family:monospace;text-align:center"></td>
+              <td><div style="font-size:10px;font-weight:700;margin-bottom:1px">Completed</div><input type="text" id="c-done" class="ctime red-border" placeholder="HH:MM" maxlength="5" style="width:100%;font-family:monospace;text-align:center;border:2px solid red!important;border-radius:3px"></td>
+            </tr>
+            <tr>
+              <td class="clb" style="white-space:nowrap">Main Pilot</td>
+              <td><select class="ctime" id="c-mpilot" style="width:100%;font-size:10px"><option value="">-- 선택 --</option><option>I.G. KANG / KG</option><option>J.K. JUNG / JK</option><option>T.C. SON / ST</option><option>G.J. PARK / PG</option><option>M.C. AN / MC</option><option>M.B. GO / GB</option><option>M.S. GIM / GM</option><option>S.E. LEE / LE</option><option>G.H. KIM / GH</option><option>K.W. CHIN / KW</option><option>M.Y. KWON / MY</option><option>S.H. LIM / LK</option><option>K.Y. LIM / KY</option><option>J.Y. GU / JY</option><option>S.H. KIM / KS</option><option>K.H. PARK / PK</option><option>Y.M. KIM / YM</option><option>T.W. HONG / TW</option><option>S.H. LEE / LH</option><option>J.O. PARK / JO</option><option>C.U. OH / OC</option><option>T.K. LEE / LT</option></select></td>
+              <td class="clb" style="white-space:nowrap">Co Pilot</td>
+              <td><select class="ctime" id="c-cpilot" style="width:100%;font-size:10px"><option value="">-- 없음 --</option><option>I.G. KANG / KG</option><option>J.K. JUNG / JK</option><option>T.C. SON / ST</option><option>G.J. PARK / PG</option><option>M.C. AN / MC</option><option>M.B. GO / GB</option><option>M.S. GIM / GM</option><option>S.E. LEE / LE</option><option>G.H. KIM / GH</option><option>K.W. CHIN / KW</option><option>M.Y. KWON / MY</option><option>S.H. LIM / LK</option><option>K.Y. LIM / KY</option><option>J.Y. GU / JY</option><option>S.H. KIM / KS</option><option>K.H. PARK / PK</option><option>Y.M. KIM / YM</option><option>T.W. HONG / TW</option><option>S.H. LEE / LH</option><option>J.O. PARK / JO</option><option>C.U. OH / OC</option><option>T.K. LEE / LT</option></select></td>
+            </tr>
+          </table>
+          <div style="border:1px solid #555;padding:3px 5px;margin-bottom:3px">
+            <div class="clb" style="font-size:8px;text-decoration:underline;margin-bottom:2px">Surcharges:</div>
+            <div class="cert-surcharge" style="font-size:8px;display:flex;flex-wrap:wrap;gap:4px 8px">
+              <div><label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="sc-dg" onchange="syncDG2()"> DG CGO Ship</label><button class="tip-btn" onclick="toggleTip('tip-sc-dg')">?</button><div class="tip-wrap" id="tip-sc-dg">선종이 Tanker, VLCC, LNG/LPG Carrier인 경우 자동 체크됩니다.<br><span style="color:#c53030;font-weight:700">※ VLCC 공선(Ballast) 출항의 경우 DG CGO Ship 할증에서 제외됩니다.</span></div></div>
+              <div><label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="sc-ni"> Night</label><button class="tip-btn" onclick="toggleTip('tip-sc-ni')">?</button><div class="tip-wrap" id="tip-sc-ni">(내용 추후 입력)</div></div>
+              <div><label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="sc-sa" onchange="syncSa2()"> Sat/Sun/Holiday</label></div>
+              <div><label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="sc-ca"> Cancel</label><button class="tip-btn" onclick="toggleTip('tip-sc-ca')">?</button><div class="tip-wrap" id="tip-sc-ca">(내용 추후 입력)</div></div>
+              <div><span style="display:inline-flex;align-items:center;gap:4px;flex-wrap:wrap">Flooding tide:<label style="display:flex;align-items:center;gap:3px;cursor:pointer"><input type="checkbox" id="sc-fl-dk" onchange="syncFl()"> Docking</label><span style="border-left:1.5px solid #888;height:12px;display:inline-block;margin:0 2px"></span><label style="display:flex;align-items:center;gap:3px;cursor:pointer"><input type="checkbox" id="sc-fl-an" onchange="syncFl()"> Anchoring</label></span><button class="tip-btn" onclick="toggleTip('tip-sc-fl')">?</button><div class="tip-wrap" id="tip-sc-fl">(내용 추후 입력)</div></div>
+              <div><label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="sc-wa"> Waiting (<input type="number" id="sc-hrs" style="width:30px;font-size:10px;padding:1px;border:1px solid #aaa;border-radius:2px;background:#fff"> hrs)</label><button class="tip-btn" onclick="toggleTip('tip-sc-wa')">?</button><div class="tip-wrap" id="tip-sc-wa">(내용 추후 입력)</div></div>
+              <div><label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="sc-sh"> Short notice</label><button class="tip-btn" onclick="toggleTip('tip-sc-sh')">?</button><div class="tip-wrap" id="tip-sc-sh">(내용 추후 입력)</div></div>
+              <div><label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="sc-ss"> Slow Speed</label><button class="tip-btn" onclick="toggleTip('tip-sc-ss')">?</button><div class="tip-wrap" id="tip-sc-ss">9KTS 미만의 지속선<br>(Sea speed order 후 30분 경과 후에도 9KTS 미달성 시)</div></div>
+              <div><label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="sc-ov"> Oversize</label><button class="tip-btn" onclick="toggleTip('tip-sc-ov')">?</button><div class="tip-wrap" id="tip-sc-ov">SDWT 부두 접안능력 초과</div></div>
+              <div><label style="display:flex;align-items:center;gap:4px;cursor:pointer"><input type="checkbox" id="sc-sp"> Special</label><button class="tip-btn" onclick="toggleTip('tip-sc-sp')">?</button><div class="tip-wrap" id="tip-sc-sp">특별 도선</div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:3px;margin-top:3px">
+              <div style="display:flex;align-items:center;gap:4px"><label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:8px"><input type="checkbox" id="sc-ot"> Other:</label><button class="tip-btn" onclick="toggleTip('tip-sc-ot')">?</button></div><div class="tip-wrap" id="tip-sc-ot">(내용 추후 입력)</div>
+              <textarea id="sc-ot-txt" placeholder="직접 입력" rows="2" style="width:100%;font-size:8px;padding:1px 4px;border:1px solid #aaa;border-radius:2px;background:#fff;resize:none;font-family:inherit;line-height:1.3"></textarea>
+            </div>
+          </div>
+          <div style="text-align:right;font-size:10px;font-style:italic;margin-bottom:3px">Pilotage Plan acknowledged by master.</div>
+          <table>
+            <colgroup><col style="width:50%"><col style="width:50%"></colgroup>
+            <tr>
+              <td style="vertical-align:top;padding:4px 5px;min-height:240px">
+                <div style="font-weight:700;font-size:10px;margin-bottom:5px;text-decoration:underline">Remarks</div>
+                <div style="display:flex;flex-direction:column;gap:5px;font-size:10px">
+                  <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+                    <input type="checkbox" id="rm-fl" style="flex-shrink:0">
+                    <span style="white-space:nowrap">First line</span>
+                    <input type="text" id="rm-fl-t" placeholder="HH:MM" maxlength="5" style="width:38px;font-size:10px;padding:1px 3px;border:1px solid #aaa;border-radius:3px;background:#fff;font-family:monospace;text-align:center;margin-left:2px">
+                    <span>hrs</span>
+                  </label>
+                  <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+                    <input type="checkbox" id="rm-ll" style="flex-shrink:0">
+                    <span style="white-space:nowrap">Last line</span>
+                    <input type="text" id="rm-ll-t" placeholder="HH:MM" maxlength="5" style="width:38px;font-size:10px;padding:1px 3px;border:1px solid #aaa;border-radius:3px;background:#fff;font-family:monospace;text-align:center;margin-left:2px">
+                    <span>hrs</span>
+                  </label>
+                  <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+                    <input type="checkbox" id="rm-da" style="flex-shrink:0">
+                    <span style="white-space:nowrap">Dropped anchor</span>
+                    <input type="text" id="rm-da-t" placeholder="HH:MM" maxlength="5" style="width:38px;font-size:10px;padding:1px 3px;border:1px solid #aaa;border-radius:3px;background:#fff;font-family:monospace;text-align:center;margin-left:2px">
+                    <span>hrs</span>
+                  </label>
+                  <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+                    <input type="checkbox" id="rm-aa" style="flex-shrink:0">
+                    <span style="white-space:nowrap">Anchor aweigh</span>
+                    <input type="text" id="rm-aa-t" placeholder="HH:MM" maxlength="5" style="width:38px;font-size:10px;padding:1px 3px;border:1px solid #aaa;border-radius:3px;background:#fff;font-family:monospace;text-align:center;margin-left:2px">
+                    <span>hrs</span>
+                  </label>
+                  <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+                    <input type="checkbox" id="rm-mo" style="flex-shrink:0">
+                    <span style="white-space:nowrap">Moored</span>
+                    <input type="text" id="rm-mo-t" placeholder="HH:MM" maxlength="5" style="width:38px;font-size:10px;padding:1px 3px;border:1px solid #aaa;border-radius:3px;background:#fff;font-family:monospace;text-align:center;margin-left:2px">
+                    <span>hrs</span>
+                  </label>
+                  <label style="display:flex;align-items:center;gap:4px;cursor:pointer">
+                    <input type="checkbox" id="rm-um" style="flex-shrink:0">
+                    <span style="white-space:nowrap">Unmoored</span>
+                    <input type="text" id="rm-um-t" placeholder="HH:MM" maxlength="5" style="width:38px;font-size:10px;padding:1px 3px;border:1px solid #aaa;border-radius:3px;background:#fff;font-family:monospace;text-align:center;margin-left:2px">
+                    <span>hrs</span>
+                  </label>
+                </div>
+              </td>
+              <td style="vertical-align:bottom;padding:2px 3px">
+                <canvas id="cv-cert-master" style="border:1px dashed #999;border-radius:3px;display:block;width:100%;height:220px;background:#fafafa;cursor:crosshair;touch-action:none"></canvas>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1px">
+                  <div style="border-top:1px solid #555;flex:1;padding-top:1px;font-weight:700;font-size:10px;text-align:center">Master</div>
+                  <button onclick="clrCS('cv-cert-master')" style="font-size:10px;padding:1px 5px;background:#fee2e2;border:1px solid #991b1b;color:#991b1b;border-radius:3px;cursor:pointer;margin-left:3px;font-family:inherit">Clear</button>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <p style="font-size:10px;color:#333;margin-top:3px;line-height:1.3">This is to certify that the pilotage service has been fulfilled as above-stated and I acknowledge the pilotage clauses shown on the back.</p>
+        </div>
+        <div class="cdiv">- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</div>
+        <div class="cert-doc" style="font-size:10px">
+          <h2 style="font-size:12px;margin-bottom:6px">CERTIFICATE OF BOAT SERVICE</h2>
+          <div style="text-align:center;font-size:10px;font-weight:700;margin-bottom:2px">&#xC720;&#xD55C;&#xD68C;&#xC0AC;&#xC120;&#xC9C4;&#xD574;&#xC6B4;</div>
+          <div style="text-align:right;margin-bottom:3px;font-size:10px;font-weight:700">DATE : <span id="cert-d2"></span></div>
+          <table style="font-size:10px;table-layout:fixed;width:100%">
+            <colgroup><col style="width:22%"><col style="width:30%"><col style="width:24%"><col style="width:24%"></colgroup>
+            <tr>
+              <td class="clb">Ship's name</td>
+              <td id="cv2" style="font-weight:700"></td>
+              <td class="clb">Ship's registry</td>
+              <td id="cf2"></td>
+            </tr>
+            <tr>
+              <td class="clb">Owner/Op</td>
+              <td id="co2"></td>
+              <td class="clb">Agency</td>
+              <td id="ca2"></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td class="clb" style="text-align:center">Embarkation</td>
+              <td class="clb" style="text-align:center" colspan="2">Disembarkation</td>
+            </tr>
+            <tr>
+              <td class="clb" style="white-space:nowrap">Where<br>engaged</td>
+              <td style="font-size:10px">DS-<span id="bs-emb" style="font-weight:700"></span>-DS(SJ<select id="bs-emb-sj" style="font-size:10px;padding:0;border:1px solid #aaa;border-radius:2px;background:#fff;width:22px;vertical-align:middle"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>)</td>
+              <td colspan="2" style="font-size:10px">DS-<span id="bs-dis" style="font-weight:700"></span>-DS(SJ<select id="bs-dis-sj" style="font-size:10px;padding:0;border:1px solid #aaa;border-radius:2px;background:#fff;width:22px;vertical-align:middle"><option value="">-</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select>)</td>
+            </tr>
+            <tr>
+              <td class="clb" style="white-space:nowrap">When<br>engaged</td>
+              <td style="padding:2px 2px;white-space:nowrap">
+                <input type="text" id="bs-et1" placeholder="HH:MM" maxlength="5" class="red-border" style="width:30px;font-size:10px;padding:1px 2px;border:2px solid red!important;border-radius:2px;background:#fff;font-family:monospace;text-align:center">~<input type="text" id="bs-et2" placeholder="HH:MM" maxlength="5" class="red-border" style="width:30px;font-size:10px;padding:1px 2px;border:2px solid red!important;border-radius:2px;background:#fff;font-family:monospace;text-align:center">
+              </td>
+              <td colspan="2" style="padding:2px 2px;white-space:nowrap">
+                <input type="text" id="bs-dt1" placeholder="HH:MM" maxlength="5" class="red-border" style="width:30px;font-size:10px;padding:1px 2px;border:2px solid red!important;border-radius:2px;background:#fff;font-family:monospace;text-align:center">~<input type="text" id="bs-dt2" placeholder="HH:MM" maxlength="5" class="red-border" style="width:30px;font-size:10px;padding:1px 2px;border:2px solid red!important;border-radius:2px;background:#fff;font-family:monospace;text-align:center">
+              </td>
+            </tr>
+            <tr>
+              <td style="font-size:10px;vertical-align:middle;padding:3px 2px">
+                <label style="display:flex;align-items:flex-start;gap:3px;cursor:pointer"><input type="checkbox" id="bs-sat" style="margin-top:2px"> <span>Sat/Sun/<br>Holiday</span></label>
+              </td>
+              <td style="font-size:10px;padding:3px 2px;white-space:nowrap">
+                <label style="display:flex;align-items:center;gap:3px;cursor:pointer;margin-bottom:2px"><input type="checkbox" id="bs-en"> Night</label><button class="tip-btn" onclick="toggleTip('tip-bs-en')">?</button>
+                <div class="tip-wrap" id="tip-bs-en">(내용 추후 입력)</div>
+                <label style="display:flex;align-items:center;gap:3px;cursor:pointer"><input type="checkbox" id="bs-eg"> Guide Boat</label><button class="tip-btn" onclick="toggleTip('tip-bs-eg')">?</button>
+                <div class="tip-wrap" id="tip-bs-eg">(내용 추후 입력)</div>
+              </td>
+              <td colspan="2" style="font-size:10px;padding:3px 2px;white-space:nowrap">
+                <label style="display:flex;align-items:center;gap:3px;cursor:pointer;margin-bottom:2px"><input type="checkbox" id="bs-dn"> Night</label><button class="tip-btn" onclick="toggleTip('tip-bs-dn')">?</button>
+                <div class="tip-wrap" id="tip-bs-dn">(내용 추후 입력)</div>
+                <label style="display:flex;align-items:center;gap:3px;cursor:pointer"><input type="checkbox" id="bs-dg"> Guide boat</label><button class="tip-btn" onclick="toggleTip('tip-bs-dg')">?</button>
+                <div class="tip-wrap" id="tip-bs-dg">(내용 추후 입력)</div>
+              </td>
+            </tr>
+          </table>
+          <table style="margin-top:3px;font-size:10px;width:100%;height:260px">
+            <colgroup><col style="width:50%"><col style="width:50%"></colgroup>
+            <tr>
+              <td style="vertical-align:top;padding:4px 5px;height:260px">
+                <div style="font-weight:700;font-size:10px;margin-bottom:4px;text-decoration:underline">Remarks</div>
+                <textarea id="bs-remarks" placeholder="직접 입력..." style="width:100%;height:220px;font-size:10px;padding:4px;border:1px solid #aaa;border-radius:3px;background:#fff;font-family:inherit;line-height:1.6;resize:none;color:#111"></textarea>
+              </td>
+              <td style="vertical-align:bottom;padding:2px 3px;height:260px">
+                <canvas id="cv-cert-boat" style="border:1px dashed #999;border-radius:3px;display:block;width:100%;height:220px;background:#fafafa;cursor:crosshair;touch-action:none"></canvas>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:1px">
+                  <div style="border-top:1px solid #555;flex:1;padding-top:1px;font-weight:700;font-size:10px;text-align:center">Master</div>
+                  <button onclick="clrCS('cv-cert-boat')" style="font-size:10px;padding:1px 5px;background:#fee2e2;border:1px solid #991b1b;color:#991b1b;border-radius:3px;cursor:pointer;margin-left:3px;font-family:inherit">Clear</button>
+                </div>
+              </td>
+            </tr>
+          </table>
+          <p style="font-size:10px;color:#333;margin-top:3px;line-height:1.3">This is to certify that the transportation service has been provided for the pilotage of above-stated ship.</p>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="action-bar" style="flex-direction:column;gap:8px">
+    <div style="display:flex;gap:10px;width:100%">
+      <button class="btn btn-s" onclick="showTab('tab-sign')" style="flex:0 0 auto;padding:12px 16px">&#8592; 이전</button>
+      <button class="btn" onclick="tempSave()" style="flex:1;background:#fff8e1;border:2px solid #f59e0b;color:#92400e;font-size:14px">&#128204; 임시저장</button>
+      <button class="btn btn-ok" onclick="saveRecord()" style="flex:2">&#128190; 저장 &amp; 완료</button>
+    </div>
+    <button class="btn no-print" onclick="doPrint()" style="width:100%;background:linear-gradient(135deg,#1e3a5f,#0f2550);color:#fff;font-size:16px;font-weight:800;padding:14px;border-radius:12px;border:none;display:flex;align-items:center;justify-content:center;gap:8px">&#128424;&#65039; 인쇄 (Print)</button>
+  </div>
+</div>
+
+<!-- RECORD VIEW -->
+<div class="screen" id="screen-record">
+  <div class="app-header">
+    <button class="back-btn" onclick="goHome()">&#8592; 홈</button>
+    <h2 id="rec-title">기록 상세</h2>
+    <span class="port-badge" id="rec-port">PORT</span>
+  </div>
+  <div id="rec-content" class="rec-detail"></div>
+  <div style="margin:12px 16px 0;padding:12px 16px;border:2px solid #e53e3e;border-radius:10px;background:#fff5f5;text-align:center">
+    <div style="font-size:12px;color:#4b5563;margin-bottom:4px;font-weight:600">이메일 주소</div>
+    <div style="font-size:16px;color:#c53030;font-weight:800;letter-spacing:0.02em">dscontrol08&#64;naver.com</div>
+  </div>
+  <div id="rec-continue-wrap" style="display:none;margin:0 16px 0">
+    <button class="btn" onclick="loadRec(viewId)" style="width:100%;background:linear-gradient(135deg,#166534,#15803d);color:#fff;font-size:16px;font-weight:800;padding:16px;border-radius:12px;border:none">&#9997;&#65039; 이어서 작성하기</button>
+  </div>
+  <div class="action-bar" style="flex-wrap:wrap;gap:8px">
+    <button class="btn btn-d" onclick="deleteRecord()" style="flex:1;min-width:80px">&#128465;&#65039; 삭제</button>
+    <button class="btn btn-p" onclick="emailRecord()" style="flex:1;min-width:80px">&#128228; 공유/이메일</button>
+    <button class="btn" onclick="viewFullRecord()" style="flex:2;background:linear-gradient(135deg,#1e3a5f,#0f2550);color:#fff;min-width:100%">&#128274; 전체 내용 보기 (잠금)</button>
+  </div>
+</div>
+<script>
+var PD = {
+  boryeong:{name:'보령',en:'BORYEONG',vhf:'Ch.69',wvhf:'Ch.16',ps:['PS1'],
+    berths:['MDA-01','MDB-41','MDB-42','MDB-43','MDB-44','MDA-51','MDA-52','SINSEOCHEON','B.A-01','B.A-02','B.A-03','B.A-04','B.A-05'],
+    tugs:[{n:'BORYEONG 1',g:293,h:'5,220/62.0'},{n:'BORYEONG 3',g:293,h:'5,220/62.0'},{n:'BORYEONG 5',g:293,h:'5,220/62.0'},{n:'BORYEONG 7',g:293,h:'5,220/63.4'},{n:'BORYEONG 9',g:293,h:'5,220/63.0'},{n:'BORYEONG 11',g:297,h:'5,220/65.0'},{n:'SHINSUNG',g:296,h:'5,220/63.0'},{n:'HAEYANG 9',g:289,h:'5,220/65.4'},{n:'SANGROK 10',g:324,h:'6,400/76.7'}]},
+  daesan:{name:'대산',en:'DAESAN',vhf:'Ch.12',wvhf:'Ch.16',ps:['PS2','PS2-2','PS3'],
+    berths:['SPM','MB1-01','MB2-01','MB3-01','MB4-01','MB5-01','MDK-11','MDK-12','MDK-13','MDK-14','MDK-15','MDK-16','MDK-17','MDK-18','MDK-19','MDH-21','MDH-22','MDH-23','MDH-24','MDH-25','MDH-26','MDS-31','MDS-32','MDS-33','MDS-34','MDS-35','MDS-36','MDS-37','KNOC','A-01','A-02','A-03','A-04','A-05','A-06','A-07','A-08','A-09','A-10','A-11','A-12','WAQ-01','WAQ-02'],
+    tugs:[{n:'DAEDONG 5',g:198,h:'3,600/39.6'},{n:'DAEDONG 7',g:124,h:'2,000/25.1'},{n:'DAEDONG 8',g:196,h:'3,600/45.9'},{n:'DAEDONG 9',g:266,h:'4,500/58.6'},{n:'DAEDONG 10',g:268,h:'5,000/65.7'},{n:'DAEDONG 11',g:281,h:'5,000/62.05'},{n:'DAESAN 1',g:136,h:'2,400/28.5'},{n:'DONGYANG 1',g:147,h:'2,000/25.0'},{n:'DONGYANG 9',g:164,h:'3,600/43.0'},{n:'HAEYANG 1',g:182,h:'3,600/40.7'},{n:'HAEYANG 2',g:182,h:'3,600/42.2'},{n:'HAEYANG 5',g:289,h:'5,220/63.6'},{n:'KOOKYANG 7',g:196,h:'3,600/46.2'},{n:'SAMWOO',g:115,h:'2,000/22.3'},{n:'SAMWOO 47',g:265,h:'4,700/61.2'},{n:'SANGROK 6',g:324,h:'6,400/75.65'},{n:'SANGROK 7',g:324,h:'6,470/75.05'},{n:'SANGROK 8',g:287,h:'5,220/61.8'},{n:'SANGROK 9',g:123,h:'2,000/26.82'},{n:'SEOHAE 11',g:90,h:'1,736/21.8'},{n:'SEOHAE 25',g:156,h:'2,400/29.1'},{n:'SEOHAE 36',g:224,h:'3,600/40.3'},{n:'SEOHAE 53',g:296,h:'5,220/68.9'},{n:'SEOHAE 55',g:323,h:'6,400/74.5'}]},
+  dangjin:{name:'당진',en:'DANGJIN',vhf:'Ch.12',wvhf:'Ch.10',ps:['PS3','PS4'],
+    berths:['PS4','MDT-61','MDT-62','MDT-63'],
+    tugs:[{n:'DAEDONG 5',g:198,h:'3,600/39.6'},{n:'DAEDONG 7',g:124,h:'2,000/25.1'},{n:'DAEDONG 8',g:196,h:'3,600/45.9'},{n:'DAEDONG 9',g:266,h:'4,500/58.6'},{n:'DAEDONG 10',g:268,h:'5,000/65.7'},{n:'DAEDONG 11',g:281,h:'5,000/62.05'},{n:'DAESAN 1',g:136,h:'2,400/28.5'},{n:'DONGYANG 1',g:147,h:'2,000/25.0'},{n:'DONGYANG 9',g:164,h:'3,600/43.0'},{n:'HAEYANG 1',g:182,h:'3,600/40.7'},{n:'HAEYANG 2',g:182,h:'3,600/42.2'},{n:'HAEYANG 5',g:289,h:'5,220/63.6'},{n:'KOOKYANG 7',g:196,h:'3,600/46.2'},{n:'SAMWOO',g:115,h:'2,000/22.3'},{n:'SAMWOO 47',g:265,h:'4,700/61.2'},{n:'SANGROK 6',g:324,h:'6,400/75.65'},{n:'SANGROK 7',g:324,h:'6,470/75.05'},{n:'SANGROK 8',g:287,h:'5,220/61.8'},{n:'SANGROK 9',g:123,h:'2,000/26.82'},{n:'SEOHAE 11',g:90,h:'1,736/21.8'},{n:'SEOHAE 25',g:156,h:'2,400/29.1'},{n:'SEOHAE 36',g:224,h:'3,600/40.3'},{n:'SEOHAE 53',g:296,h:'5,220/68.9'},{n:'SEOHAE 55',g:323,h:'6,400/74.5'}]},
+  taean:{name:'태안',en:'TAEAN',vhf:'Ch.12',wvhf:'Ch.16',ps:['PS2','PS2-2'],
+    berths:['MDT-51','MDT-52','MDT-53','WAQ-01','WAQ-02'],
+    tugs:[{n:'DAEDONG 5',g:198,h:'3,600/39.6'},{n:'DAEDONG 7',g:124,h:'2,000/25.1'},{n:'DAEDONG 8',g:196,h:'3,600/45.9'},{n:'DAEDONG 9',g:266,h:'4,500/58.6'},{n:'DAEDONG 10',g:268,h:'5,000/65.7'},{n:'DAEDONG 11',g:281,h:'5,000/62.05'},{n:'DAESAN 1',g:136,h:'2,400/28.5'},{n:'HAEYANG 1',g:182,h:'3,600/40.7'},{n:'HAEYANG 2',g:182,h:'3,600/42.2'},{n:'HAEYANG 5',g:289,h:'5,220/63.6'},{n:'SAMWOO',g:115,h:'2,000/22.3'},{n:'SAMWOO 47',g:265,h:'4,700/61.2'},{n:'SEOHAE 11',g:90,h:'1,736/21.8'},{n:'SEOHAE 25',g:156,h:'2,400/29.1'},{n:'SEOHAE 36',g:224,h:'3,600/40.3'}]}
+};
+
+var TUG_POS = ["선수(F'cle deck)","선미(After quarter)","선수(Main deck)","선미(In front of bridge)",'선수 Push','선미 Pull','Fwd Center Lead','Aft Center Lead','대기(Standby)'];
+
+var CL_SHIP = [
+  '선측 돌출물 제거 완료 / Ship\'s side clear of protrusions for safe approach',
+  '앵커 즉시 사용 준비 / Anchors ready for immediate use',
+  '통항 및 접안 계획 합의 / Passage & berthing plan agreed',
+  '선장-도선사 정보교환 완료 / Master-Pilot information exchange completed',
+  '도선 약관 확인 / Pilotage terms & conditions confirmed',
+  '선박 결함 정보 제공 / Vessel deficiencies provided to pilot',
+  'Pilot Information Card 제공 / Pilot Information Card provided',
+  '추진 정보 제공 / Propulsion type & rotation info provided'
+];
+var CL_EQUIP = [
+  'VHF 채널 설정 완료 / Main & working VHF channels set',
+  '주기관 즉시 응답 가능 / Main engine available for full maneuvering',
+  '도선 사다리 설치 및 조명 / Pilot ladder properly rigged, manned & lit',
+  'SOLAS Reg. V/23 / IMO Res. A.1045(27) 준수 확인 / Compliance confirmed',
+  'Bow Thruster 작동 확인 / Bow thruster operational status confirmed',
+  '계류팀 배치 완료 / Mooring team stationed fore & aft',
+  'Tug 라인 준비 / Tug lines ready for deployment <span style="color:#c00;font-weight:700">if required</span>'
+];
+var CL_FINAL = [
+  '모든 통신 채널 확인 / All communication channels verified',
+  '비상 절차 확인 / Emergency procedures confirmed',
+  '수면상 최대 높이 확인 / Maximum air draft confirmed',
+  '도선사 면허 확인 / Pilot certificate verified',
+  '선장 면허 확인 / Master certificate verified'
+];
+
+var curPort = null, chk = {}, tugSel = {}, viewId = null;
+var recs = (function(){ try { var s=localStorage.getItem('mpx_v5'); return s?JSON.parse(s):[]; } catch(e){ return []; } })();
+var sigCtx={}, sigDraw={}, sigCvs={}, csCtx={}, csDraw={};
+
+function pad(n){ return String(n).padStart(2,'0'); }
+function nowDate(){ var d=new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function nowTime(){ var d=new Date(); return pad(d.getHours())+':'+pad(d.getMinutes()); }
+function lsSave(){ try{ localStorage.setItem('mpx_v5', JSON.stringify(recs)); }catch(e){} }
+
+function getNextVersion(){
+  try{
+    var today = getTodayStr();
+    var savedDate = localStorage.getItem('mpx_file_ver_date')||'';
+    var v;
+    if(savedDate !== today){
+      v = 1;
+    } else {
+      v = parseInt(localStorage.getItem('mpx_file_ver')||'0') + 1;
+    }
+    localStorage.setItem('mpx_file_ver', String(v));
+    localStorage.setItem('mpx_file_ver_date', today);
+    return v;
+  }catch(e){ return 1; }
+}
+function getTodayStr(){
+  var d=new Date();
+  return d.getFullYear()+'-'+(d.getMonth()<9?'0':'')+(d.getMonth()+1)+'-'+(d.getDate()<10?'0':'')+d.getDate();
+}
+
+
+function updateClock(){
+  var n=new Date(), days=['일','월','화','수','목','금','토'];
+  var e1=document.getElementById('home-clock');
+  var e2=document.getElementById('home-time2');
+  var e3=document.getElementById('home-date');
+  if(e1) e1.textContent = pad(n.getHours())+':'+pad(n.getMinutes())+':'+pad(n.getSeconds());
+  if(e2) e2.textContent = pad(n.getHours())+':'+pad(n.getMinutes());
+  if(e3) e3.textContent = n.getFullYear()+'.'+pad(n.getMonth()+1)+'.'+pad(n.getDate())+' ('+days[n.getDay()]+')';
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+function showScreen(id){
+  var all = document.querySelectorAll('.screen');
+  for(var i=0;i<all.length;i++) all[i].classList.remove('active');
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function goHome(){ showScreen('screen-home'); renderRecs(); }
+
+/* ── Mooring Diagram ── */
+function getMoorVal(id){
+  var el=document.getElementById(id);
+  return el?el.value:'N/A';
+}
+function drawMoorLines(){
+  var svgP=document.getElementById('moor-lines-port');
+  var svgS=document.getElementById('moor-lines-stbd');
+  if(!svgP||!svgS) return;
+  svgP.innerHTML=''; svgS.innerHTML='';
+  return; // 라인 드로잉 비활성화
+
+  // 선체: BOW(뾰족)=상단 Y:34~78, STERN(둥근)=하단 Y:318~366
+  // 선체 좌측=X:24, 우측=X:64, Mid=Y:198
+  var defs=[
+    {id:'head',  yC:82,   color:'#1a3a6b', type:'head'},
+    {id:'obr',   yC:118,  color:'#e07000', type:'breast'},
+    {id:'br',    yC:140,  color:'#e07000', type:'breast'},
+    {id:'ibr',   yC:162,  color:'#e07000', type:'breast'},
+    {id:'fsp',   yC:185,  color:'#008000', type:'fwdspring'},
+    {id:'asp',   yC:212,  color:'#008000', type:'aftspring'},
+    {id:'ibr2',  yC:238,  color:'#e07000', type:'breast'},
+    {id:'br2',   yC:260,  color:'#e07000', type:'breast'},
+    {id:'obr2',  yC:282,  color:'#e07000', type:'breast'},
+    {id:'stern', yC:318,  color:'#1a3a6b', type:'stern'}
+  ];
+
+  defs.forEach(function(d){
+    var vp=getMoorVal('ml-'+d.id+'-p');
+    if(vp!=='N/A') drawMoorSide(svgP, parseInt(vp), d.yC, d.color, d.type, 'port');
+    var vs=getMoorVal('ml-'+d.id+'-s');
+    if(vs!=='N/A') drawMoorSide(svgS, parseInt(vs), d.yC, d.color, d.type, 'stbd');
+  });
+}
+
+function drawMoorSide(g, count, yC, color, type, side){
+  var shipX = side==='port' ? 24 : 64;
+  var dir   = side==='port' ? -1 : 1;
+  var len   = 36;
+  var gap   = 5;
+  var startY= yC - (count-1)*gap/2;
+
+  for(var i=0;i<count;i++){
+    var y1 = startY + i*gap;
+    var x2, y2;
+
+    if(type==='breast'){
+      x2 = shipX + dir*len;
+      y2 = y1;
+    } else if(type==='fwdspring'){
+      // Fwd Spring: 선미(아래) 방향으로 길게, 외측으로 약간
+      x2 = shipX + dir*len*0.5;
+      y2 = y1 + len*1.2;
+    } else if(type==='aftspring'){
+      // Aft Spring: 선수(위) 방향으로 길게, 외측으로 약간
+      x2 = shipX + dir*len*0.5;
+      y2 = y1 - len*1.2;
+    } else if(type==='head'){
+      // Head Lines: BOW(위) 방향으로 퍼지는 사선
+      var spread = (i - (count-1)/2) * 8;
+      x2 = shipX + dir*len*0.7 + spread*dir;
+      y2 = y1 - len*1.1;
+    } else if(type==='stern'){
+      // Stern Lines: STERN(아래) 방향으로 퍼지는 사선
+      var spread2 = (i - (count-1)/2) * 8;
+      x2 = shipX + dir*len*0.7 + spread2*dir;
+      y2 = y1 + len*1.1;
+    }
+
+    var line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', shipX);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2);
+    line.setAttribute('stroke', color);
+    line.setAttribute('stroke-width', '2');
+    line.setAttribute('stroke-linecap', 'round');
+    g.appendChild(line);
+
+    // 줄 끝 작은 원
+    var circ = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circ.setAttribute('cx', x2);
+    circ.setAttribute('cy', y2);
+    circ.setAttribute('r', '2.5');
+    circ.setAttribute('fill', color);
+    g.appendChild(circ);
+  }
+}
+
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2500);
+}
+
+function showTab(id){
+  var all=document.querySelectorAll('.tab-content');
+  for(var i=0;i<all.length;i++) all[i].style.display='none';
+  document.getElementById(id).style.display = (id==='tab-cert') ? 'block' : 'flex';
+  var btns=document.querySelectorAll('.tab-btn');
+  for(var i=0;i<btns.length;i++){
+    var oc=btns[i].getAttribute('onclick')||'';
+    btns[i].classList.toggle('active', oc.indexOf("'"+id+"'")>=0);
+  }
+  if(id==='tab-sign'){ buildSummary(); setTimeout(function(){ initSig('cv-master'); initSig('cv-pilot'); }, 300); }
+  if(id==='tab-cert'){ syncCert(); setTimeout(initPinchZoom, 200); }
+  window.scrollTo(0,0);
+}
+
+function setRadio(gid, el){
+  var all=document.querySelectorAll('#'+gid+' .rbtn');
+  for(var i=0;i<all.length;i++) all[i].classList.remove('active');
+  el.classList.add('active');
+  updateProg();
+}
+function getRadio(gid){
+  var el=document.querySelector('#'+gid+' .rbtn.active');
+  return el ? el.getAttribute('data-val') : '';
+}
+function setRadioVal(gid, val){
+  if(!val) return;
+  var all=document.querySelectorAll('#'+gid+' .rbtn');
+  for(var i=0;i<all.length;i++){
+    if(all[i].getAttribute('data-val')===val){
+      all[i].classList.add('active');
+    } else {
+      all[i].classList.remove('active');
+    }
+  }
+}
+
+function selectPort(port){
+  curPort=port;
+  var p=PD[port];
+  document.getElementById('form-port-badge').textContent=p.en;
+  document.getElementById('tug-title').textContent='가용 예선 - '+p.name+' ('+p.tugs.length+'척)';
+  document.getElementById('f-vhf').value=p.vhf;
+  document.getElementById('f-wvhf').value=p.wvhf;
+  document.getElementById('f-date').value=nowDate(); autoCheckHoliday();
+  document.getElementById('f-time').value=nowTime();
+  chk={}; tugSel={}; tempSaveId=null;
+  buildCL('cl-ship', CL_SHIP, 'sh');
+  buildCL('cl-equip', CL_EQUIP, 'eq');
+  buildTugs(p.tugs);
+  updateBerths();
+  updateBerths2();
+  updateTooltips(port);
+  showTab('tab-vessel');
+  showScreen('screen-form');
+}
+
+function fillSel(id, items, ph){
+  var s=document.getElementById(id);
+  if(!s) return;
+  s.innerHTML='<option value="">'+ph+'</option>';
+  for(var i=0;i<items.length;i++){
+    var o=document.createElement('option');
+    o.value=items[i]; o.textContent=items[i];
+    s.appendChild(o);
+  }
+}
+
+function updateBerths(){
+  var op=getRadio('rg-op'), p=curPort?PD[curPort]:null;
+  var rF=document.getElementById('row-from');
+  var rSF=document.getElementById('row-sf');
+  var rB=document.getElementById('row-berth');
+  var rST=document.getElementById('row-st');
+  var rT=document.getElementById('row-to');
+  var lbl=document.getElementById('lbl-berth');
+  rF.style.display='none'; rSF.style.display='none';
+  rST.style.display='none'; rT.style.display='none';
+  rB.style.display='block';
+  if(!p) return;
+  if(op==='ARRIVAL'){
+    rF.style.display='block'; lbl.textContent='접안 부두 (Berth)';
+    fillSel('f-from', p.ps, '-- 선택 --');
+    fillSel('f-berth', p.berths, '-- 선택 --');
+  } else if(op==='DEPARTURE'){
+    rT.style.display='block'; lbl.textContent='이안 부두 (Berth)';
+    fillSel('f-berth', p.berths, '-- 선택 --');
+    fillSel('f-to', p.ps, '-- 선택 --');
+  } else if(op==='SHIFT'){
+    rB.style.display='none'; rSF.style.display='block'; rST.style.display='block';
+    fillSel('f-sf', p.berths, '-- 선택 --');
+    fillSel('f-st', p.berths, '-- 선택 --');
+  }
+}
+
+
+function updateBerths2(){
+  var op=getRadio('rg-op2'), p=curPort?PD[curPort]:null;
+  var rF2=document.getElementById('row-from2');
+  var rSF2=document.getElementById('row-sf2');
+  var rB2=document.getElementById('row-berth2');
+  var rST2=document.getElementById('row-st2');
+  var rT2=document.getElementById('row-to2');
+  var lbl2=document.getElementById('lbl-berth2');
+  if(rF2) rF2.style.display='none';
+  if(rSF2) rSF2.style.display='none';
+  if(rST2) rST2.style.display='none';
+  if(rT2) rT2.style.display='none';
+  if(rB2) rB2.style.display='block';
+  if(!p) return;
+  if(op==='ARRIVAL'){
+    if(rF2) rF2.style.display='block';
+    if(lbl2) lbl2.textContent='접안 부두 [증서 2]';
+    fillSel('f-from2', p.ps, '-- 선택 --');
+    fillSel('f-berth2', p.berths, '-- (없음) --');
+  } else if(op==='DEPARTURE'){
+    if(rT2) rT2.style.display='block';
+    if(lbl2) lbl2.textContent='이안 부두 [증서 2]';
+    fillSel('f-berth2', p.berths, '-- (없음) --');
+    fillSel('f-to2', p.ps, '-- 선택 --');
+  } else if(op==='SHIFT'){
+    if(rB2) rB2.style.display='none';
+    if(rSF2) rSF2.style.display='block';
+    if(rST2) rST2.style.display='block';
+    fillSel('f-sf2', p.berths, '-- (없음) --');
+    fillSel('f-st2', p.berths, '-- (없음) --');
+  }
+}
+
+function autoCheckNight2(){
+  var dateStr = (document.getElementById('f-date2')||{}).value||'';
+  if(!dateStr) return;
+  var com2 = (document.getElementById('c2-com')||{}).value||'';
+  var done2 = (document.getElementById('c2-done')||{}).value||'';
+  if(com2 && done2){
+    var ni2 = document.getElementById('sc2-ni');
+    if(ni2) ni2.checked = isInNight(dateStr, com2, done2);
+  }
+}
+function buildCL(cid, items, prefix){
+  var c=document.getElementById(cid); c.innerHTML='';
+  for(var i=0;i<items.length;i++){
+    var id=prefix+'-'+i;
+    var div=document.createElement('div');
+    div.className='ci';
+    div.setAttribute('onclick','toggleCL("'+id+'")');
+    div.innerHTML='<div class="cbox" id="box-'+id+'"></div><div class="clbl" id="lbl-'+id+'">'+items[i]+'</div>';
+    c.appendChild(div);
+    updCL(id);
+  }
+}
+function toggleCL(id){
+  var cur=chk[id];
+  if(!cur) chk[id]='checked';
+  else if(cur==='checked') chk[id]='na';
+  else delete chk[id];
+  updCL(id); updateProg();
+}
+function updCL(id){
+  var box=document.getElementById('box-'+id);
+  var lbl=document.getElementById('lbl-'+id);
+  if(!box) return;
+  var st=chk[id];
+  box.className='cbox'+(st==='checked'?' checked':st==='na'?' na':'');
+  box.textContent=st==='checked'?'v':st==='na'?'N/A':'';
+  if(lbl) lbl.className='clbl'+(st==='checked'?' ck':'');
+}
+
+function buildTugs(tugs){
+  var t=document.getElementById('tug-table');
+  var h='<thead><tr><th>예선명</th><th>GT</th><th>HP/BP</th><th>배치위치</th></tr></thead><tbody>';
+  for(var i=0;i<tugs.length;i++){
+    var tug=tugs[i];
+    var opts='<option value="">-</option>';
+    for(var j=0;j<TUG_POS.length;j++) opts+='<option value="'+TUG_POS[j]+'">'+TUG_POS[j]+'</option>';
+    h+='<tr><td style="font-weight:600;font-size:12px;white-space:nowrap">'+tug.n+'</td>';
+    h+='<td style="font-family:monospace;color:#4b5563">'+tug.g+'</td>';
+    h+='<td style="font-family:monospace">'+tug.h+'</td>';
+    h+='<td><select class="tsel" onchange="tugSel[\''+tug.n+'\']=this.value||null;updateProg()">'+opts+'</select></td></tr>';
+  }
+  t.innerHTML=h+'</tbody>';
+}
+
+function initSig(id){
+  var c=document.getElementById(id);
+  if(!c) return;
+  var dpr=window.devicePixelRatio||1;
+  var w=c.offsetWidth||c.parentElement.offsetWidth||300;
+
+  // 캔버스 크기 설정 (매번 갱신 — 탭 전환 시 offsetWidth 변화 대응)
+  c.width=Math.round(w*dpr); c.height=Math.round(130*dpr);
+  var ctx=c.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.strokeStyle='#1a3a6b'; ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.lineJoin='round';
+  sigCtx[id]=ctx; sigDraw[id]=false; sigCvs[id]=c;
+
+  // 이벤트 리스너 중복 방지
+  if(c._sigInited) return;
+  c._sigInited=true;
+
+  function gp(e){
+    var r=c.getBoundingClientRect();
+    var s=e.touches?e.touches[0]:e;
+    // CSS 크기 기준으로 좌표 계산 (DPR 보정 불필요 — ctx.scale로 이미 처리됨)
+    return {x:(s.clientX-r.left)*(c.width/dpr/r.width), y:(s.clientY-r.top)*(c.height/dpr/r.height)};
+  }
+  c.addEventListener('mousedown',   function(e){ e.preventDefault(); var p=gp(e); sigDraw[id]=true; sigCtx[id].beginPath(); sigCtx[id].moveTo(p.x,p.y); });
+  c.addEventListener('mousemove',   function(e){ e.preventDefault(); if(!sigDraw[id]) return; var p=gp(e); sigCtx[id].lineTo(p.x,p.y); sigCtx[id].stroke(); });
+  c.addEventListener('mouseup',     function(){ sigDraw[id]=false; });
+  c.addEventListener('mouseleave',  function(){ sigDraw[id]=false; });
+  c.addEventListener('touchstart',  function(e){ e.preventDefault(); if(!e.touches||!e.touches[0]) return; var p=gp(e); sigDraw[id]=true; sigCtx[id].beginPath(); sigCtx[id].moveTo(p.x,p.y); }, {passive:false});
+  c.addEventListener('touchmove',   function(e){ e.preventDefault(); if(!sigDraw[id]||!e.touches||!e.touches[0]) return; var p=gp(e); sigCtx[id].lineTo(p.x,p.y); sigCtx[id].stroke(); }, {passive:false});
+  c.addEventListener('touchend',    function(e){ e.preventDefault(); sigDraw[id]=false; }, {passive:false});
+  c.addEventListener('touchcancel', function(){ sigDraw[id]=false; });
+}
+function clearSig(id){
+  var c=sigCvs[id]||document.getElementById(id);
+  if(!c) return;
+  // 캔버스 내용만 지우고 ctx 재설정 (이벤트는 유지)
+  var dpr=window.devicePixelRatio||1;
+  var w=c.offsetWidth||c.parentElement.offsetWidth||300;
+  c.width=Math.round(w*dpr); c.height=Math.round(130*dpr);
+  var ctx=c.getContext('2d');
+  ctx.scale(dpr,dpr);
+  ctx.strokeStyle='#1a3a6b'; ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.lineJoin='round';
+  sigCtx[id]=ctx; sigDraw[id]=false; sigCvs[id]=c;
+}
+function getSig(id){ try{ var c=sigCvs[id]; if(!c) return null; var t=document.createElement('canvas'); t.width=c.width; t.height=c.height; t.getContext('2d').drawImage(c,0,0); return t.toDataURL(); }catch(e){ return null; } }
+
+function initCS(id){
+  var c=document.getElementById(id);
+  if(!c) return;
+  var dpr=window.devicePixelRatio||1, rect=c.getBoundingClientRect();
+  var w=(rect.width||c.offsetWidth||300)*dpr;
+  // 이미 초기화됐고 크기도 정상이면 스킵
+  if(csCtx[id] && c.width>10) return;
+  // 크기가 0이면 csCtx 리셋 후 재초기화
+  if(csCtx[id]) { delete csCtx[id]; }
+  c.width=w; c.height=c.offsetHeight*dpr||60*dpr;
+  var ctx=c.getContext('2d');
+  ctx.scale(dpr,dpr); ctx.strokeStyle='#000a1a'; ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.lineJoin='round';
+  csCtx[id]=ctx; csDraw[id]=false;
+  function gp(e){ var r=c.getBoundingClientRect(), s=e.touches?e.touches[0]:e; return {x:s.clientX-r.left, y:s.clientY-r.top}; }
+  c.addEventListener('mousedown', function(e){ e.preventDefault(); var p=gp(e); csDraw[id]=true; ctx.beginPath(); ctx.moveTo(p.x,p.y); });
+  c.addEventListener('mousemove', function(e){ if(!csDraw[id]) return; var p=gp(e); ctx.lineTo(p.x,p.y); ctx.stroke(); });
+  c.addEventListener('mouseup', function(){ csDraw[id]=false; });
+  c.addEventListener('mouseleave', function(){ csDraw[id]=false; });
+  c.addEventListener('touchstart', function(e){ e.preventDefault(); var p=gp(e); csDraw[id]=true; ctx.beginPath(); ctx.moveTo(p.x,p.y); }, {passive:false});
+  c.addEventListener('touchmove', function(e){ e.preventDefault(); if(!csDraw[id]) return; var p=gp(e); ctx.lineTo(p.x,p.y); ctx.stroke(); }, {passive:false});
+  c.addEventListener('touchend', function(){ csDraw[id]=false; });
+}
+function clrCS(id){
+  var c=document.getElementById(id);
+  if(!c) return;
+  // 컨텍스트가 없으면 먼저 초기화
+  if(!csCtx[id]) initCS(id);
+  if(csCtx[id]){
+    csCtx[id].clearRect(0,0,c.width,c.height);
+    // 컨텍스트는 유지 (삭제하면 이후 서명 불가)
+    csDraw[id]=false;
+  }
+}
+
+function updateProg(){
+  var total=CL_SHIP.length+CL_EQUIP.length;
+  var ck=0; for(var k in chk){ if(chk[k]==='checked') ck++; }
+  var v=gv('f-vessel').trim()?20:0;
+  var pl=gv('f-pilot')?20:0;
+  var pct=Math.min(Math.round((ck/total)*60+v+pl),100);
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('prog-pct').textContent=pct+'%';
+}
+
+function buildSummary(){
+  var total=CL_SHIP.length+CL_EQUIP.length;
+  var ck=0, na=0;
+  for(var k in chk){ if(chk[k]==='checked') ck++; else if(chk[k]==='na') na++; }
+  var un=total-ck-na;
+  document.getElementById('sum-boxes').innerHTML=
+    '<div style="text-align:center;background:rgba(22,101,52,.1);border-radius:8px;padding:10px 4px"><div style="font-size:22px;font-weight:800;color:#166534">'+ck+'</div><div style="font-size:10px;color:#4b5563">완료</div></div>'+
+    '<div style="text-align:center;background:#fee2e2;border-radius:8px;padding:10px 4px"><div style="font-size:22px;font-weight:800;color:#991b1b">'+na+'</div><div style="font-size:10px;color:#4b5563">N/A</div></div>'+
+    '<div style="text-align:center;background:#f0f6ff;border-radius:8px;padding:10px 4px"><div style="font-size:22px;font-weight:800;color:#1a3a6b">'+un+'</div><div style="font-size:10px;color:#4b5563">미완료</div></div>';
+  var msg=document.getElementById('sum-msg');
+  if(un>0){ msg.style.background='#fee2e2'; msg.style.color='#991b1b'; msg.textContent='경고: '+un+'개 항목 미완료'; }
+  else{ msg.style.background='#dcfce7'; msg.style.color='#166534'; msg.textContent='모든 항목 완료'; }
+}
+
+function getOwner(){
+  var s=document.getElementById('f-owner');
+  if(!s) return '';
+  if(s.value==='__d__'){ var c=document.getElementById('f-owner-c'); return c?c.value:''; }
+  return s.value;
+}
+function getAgency(){
+  var s=document.getElementById('f-agency');
+  if(!s) return '';
+  if(s.value==='__d__'){ var c=document.getElementById('f-agency-c'); return c?c.value:''; }
+  return s.value;
+}
+function handleDirect(selId, inpId){
+  var sel=document.getElementById(selId);
+  var inp=document.getElementById(inpId);
+  if(sel.value==='__d__'){ inp.style.display='block'; inp.focus(); }
+  else{ inp.style.display='none'; inp.value=''; }
+  syncOA();
+}
+
+// 한국 공휴일 (고정) + 대체공휴일 로직
+var KR_HOLIDAYS = {
+  '01-01':1,'03-01':1,'05-05':1,'06-06':1,'08-15':1,
+  '10-03':1,'10-09':1,'12-25':1
+};
+// 음력 → 양력 변환 테이블 (2024~2027 주요 명절)
+var LUNAR_HOLIDAYS = [
+  // 설날 연휴 (음력 1/1 전후)
+  '2025-01-28','2025-01-29','2025-01-30',
+  '2026-02-16','2026-02-17','2026-02-18',
+  '2027-02-05','2027-02-06','2027-02-07',
+  // 추석 연휴 (음력 8/14~16)
+  '2024-09-16','2024-09-17','2024-09-18',
+  '2025-10-05','2025-10-06','2025-10-07',
+  '2026-09-24','2026-09-25','2026-09-26',
+  '2027-10-13','2027-10-14','2027-10-15',
+  // 어린이날 대체 등 추가 대체공휴일
+  '2025-05-06',
+  '2026-03-02','2026-05-25',
+  // 부처님 오신 날
+  '2025-05-05','2026-05-24','2027-05-13',
+  // 현충일 대체 없음(월~토), 개천절/한글날 대체
+  '2025-10-06',
+];
+function isKrHoliday(dateStr){
+  if(!dateStr) return false;
+  var d = new Date(dateStr);
+  var dow = d.getDay(); // 0=일,6=토
+  if(dow===0||dow===6) return true;
+  var md = (d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+'-'+(d.getDate()<10?'0':'')+d.getDate();
+  if(KR_HOLIDAYS[md]) return true;
+  if(LUNAR_HOLIDAYS.indexOf(dateStr)>=0) return true;
+  return false;
+}
+function autoCheckHoliday(){
+  var dateStr = gv('f-date');
+  var isHol = isKrHoliday(dateStr);
+  var scSa = document.getElementById('sc-sa');
+  var bsSat = document.getElementById('bs-sat');
+  if(scSa) scSa.checked = isHol;
+  if(bsSat) bsSat.checked = isHol;
+  var bs2Sat=document.getElementById('bs2-sat'); if(bs2Sat) bs2Sat.checked = isHol;
+  var sc2Sa=document.getElementById('sc2-sa'); if(sc2Sa) sc2Sa.checked = isHol;
+  syncSa2();
+}
+
+
+
+
+// ── 야간 시간표 (0-indexed month) ──
+var NIGHT_TABLE = [
+  [17,30,7,30],  // 1월  (12~01월)
+  [18, 0,7, 0],  // 2월  (02~03월)
+  [18, 0,7, 0],  // 3월
+  [19, 0,5,30],  // 4월  (04~05월)
+  [19, 0,5,30],  // 5월
+  [19,30,5,30],  // 6월  (06~07월)
+  [19,30,5,30],  // 7월
+  [19, 0,6, 0],  // 8월  (08~09월)
+  [19, 0,6, 0],  // 9월
+  [17,30,7, 0],  // 10월 (10~11월)
+  [17,30,7, 0],  // 11월
+  [17,30,7,30]   // 12월 (12~01월)
+];
+function toMin(h,m){ return h*60+m; }
+function parseHM(s){ var r=s&&s.match(/^(\d{1,2}):(\d{2})$/); return r?{h:parseInt(r[1]),m:parseInt(r[2])}:null; }
+function isInNight(dateStr, comStr, doneStr){
+  if(!dateStr||!comStr||!doneStr) return false;
+  var d=new Date(dateStr), nt=NIGHT_TABLE[d.getMonth()];
+  var ns=toMin(nt[0],nt[1]), ne=toMin(nt[2],nt[3]); // 야간시작, 야간종료(새벽)
+  var com=parseHM(comStr), done=parseHM(doneStr);
+  if(!com||!done) return false;
+  var cs=toMin(com.h,com.m), ds=toMin(done.h,done.m);
+  // 야간은 자정 넘김: ns(예:19:00) > ne(예:05:30)
+  // 도선이 야간 시작 이후이거나, 야간 종료 이전에 끝나면 Night
+  // 판단: commenced >= ns OR completed <= ne(+24h 기준) OR 자정 전후 걸침
+  if(ds < cs) ds += 1440; // 자정 넘긴 경우
+  var ne24 = ne + 1440;   // 다음날 새벽 기준
+  // 겹침 조건: 도선구간이 야간구간과 한 분이라도 겹치면 true
+  // 야간구간: [ns, ne24], 도선구간: [cs, ds]
+  // 겹침: cs < ne24 && ds > ns
+  var overlap = (cs < ne24 && ds > ns);
+  // 단, 도선이 완전히 낮에만 있는 경우 제외 (ne < cs < ns 인 경우)
+  // → cs가 새벽종료(ne)보다 크고 야간시작(ns)보다 작으면 낮
+  if(!overlap){
+    // 도선이 새벽 이후 ~ 야간 시작 이전 (낮 시간대)인지 확인
+    var inDay = (cs >= ne && cs < ns && ds > ne && ds <= ns);
+    return !inDay;
+  }
+  return overlap;
+}
+function autoCheckNight(){
+  var dateStr = (document.getElementById('f-date')||{}).value||'';
+  // 증서1
+  var com1 = (document.getElementById('c-com')||{}).value||'';
+  var done1 = (document.getElementById('c-done')||{}).value||'';
+  if(com1 && done1){
+    var ni1 = document.getElementById('sc-ni');
+    if(ni1) ni1.checked = isInNight(dateStr, com1, done1);
+  }
+  // 증서2
+  var com2 = (document.getElementById('c2-com')||{}).value||'';
+  var done2 = (document.getElementById('c2-done')||{}).value||'';
+  if(com2 && done2){
+    var ni2 = document.getElementById('sc2-ni');
+    if(ni2) ni2.checked = isInNight(dateStr, com2, done2);
+  }
+}
+function autoCheckDG(){
+  var st = gv('f-shiptype');
+  var dg = ['Tanker (Oil)','Tanker (Chemical)','VLCC','LNG Carrier','LPG Carrier'];
+  var isDG = dg.indexOf(st) >= 0;
+  var scDg = document.getElementById('sc-dg');
+  if(scDg) scDg.checked = isDG;
+  syncDG2();
+}
+function syncDG2(){
+  var sc1 = document.getElementById('sc-dg');
+  var sc2 = document.getElementById('sc2-dg');
+  if(sc1 && sc2) sc2.checked = sc1.checked;
+}
+function syncSa2(){
+  var sc1 = document.getElementById('sc-sa');
+  var sc2 = document.getElementById('sc2-sa');
+  if(sc1 && sc2) sc2.checked = sc1.checked;
+}
+
+// ── 핀치 줌 (두 손가락) ──
+var certScale = 1.0;
+var certScaleMin = 0.4;
+var certScaleMax = 3.0;
+var pinchStartDist = 0;
+var pinchStartScale = 1.0;
+
+function certApplyScale(scale, originX, originY){
+  certScale = Math.min(certScaleMax, Math.max(certScaleMin, scale));
+  certScale = Math.round(certScale * 100) / 100;
+  var inner = document.getElementById('cert-zoom-inner');
+  var wrap  = document.getElementById('cert-zoom-wrap');
+  if(!inner) return;
+  inner.style.transformOrigin = (originX||0)+'px '+(originY||0)+'px';
+  inner.style.transform = 'scale('+certScale+')';
+  // 래퍼 높이 확장하여 스크롤 가능하게
+  var baseH = inner.offsetHeight;
+  wrap.style.minHeight = Math.round(baseH * certScale + 60)+'px';
+  // 힌트 텍스트 업데이트
+  var hint = document.getElementById('pinch-hint');
+  if(hint) hint.textContent = Math.round(certScale*100)+'%  (두 손가락으로 확대/축소)';
+}
+
+function initPinchZoom(){
+  var wrap = document.getElementById('cert-zoom-wrap');
+  if(!wrap || wrap._pinchInited) return;
+  wrap._pinchInited = true;
+
+  wrap.addEventListener('touchstart', function(e){
+    if(e.touches.length === 2){
+      e.preventDefault();
+      var dx = e.touches[0].clientX - e.touches[1].clientX;
+      var dy = e.touches[0].clientY - e.touches[1].clientY;
+      pinchStartDist = Math.sqrt(dx*dx + dy*dy);
+      pinchStartScale = certScale;
+    }
+  }, {passive:false});
+
+  wrap.addEventListener('touchmove', function(e){
+    if(e.touches.length === 2){
+      e.preventDefault();
+      var dx = e.touches[0].clientX - e.touches[1].clientX;
+      var dy = e.touches[0].clientY - e.touches[1].clientY;
+      var dist = Math.sqrt(dx*dx + dy*dy);
+      if(pinchStartDist === 0) return;
+      var newScale = pinchStartScale * (dist / pinchStartDist);
+      // 핀치 중심점 계산 (wrap 기준)
+      var rect = wrap.getBoundingClientRect();
+      var cx = ((e.touches[0].clientX + e.touches[1].clientX)/2) - rect.left + wrap.scrollLeft;
+      var cy = ((e.touches[0].clientY + e.touches[1].clientY)/2) - rect.top  + wrap.scrollTop;
+      certApplyScale(newScale, cx/certScale, cy/certScale);
+    }
+  }, {passive:false});
+
+  wrap.addEventListener('touchend', function(e){
+    if(e.touches.length < 2){
+      pinchStartDist = 0;
+    }
+  });
+
+  // 더블탭 → 리셋
+  var lastTap = 0;
+  wrap.addEventListener('touchend', function(e){
+    if(e.touches.length > 0) return;
+    var now = Date.now();
+    if(now - lastTap < 300){
+      certApplyScale(1.0, 0, 0);
+      var hint = document.getElementById('pinch-hint');
+      if(hint) hint.textContent = '&#129307; 두 손가락으로 펼치면 확대, 오므리면 축소';
+    }
+    lastTap = now;
+  });
+}
+function toggleTip(id){
+  var el=document.getElementById(id);
+  if(el) el.classList.toggle('open');
+}
+
+function syncCert2Pilot(){
+  var pilot=gv('f-pilot');
+  var copilot=gv('f-copilot');
+  var mp=document.getElementById('c2-mpilot');
+  var cp=document.getElementById('c2-cpilot');
+  if(mp&&pilot){
+    var short=pilot.indexOf(' (')>=0?pilot.substring(0,pilot.indexOf(' (')):pilot;
+    for(var i=0;i<mp.options.length;i++){ if(mp.options[i].value===short){ mp.value=short; break; } }
+  }
+  if(cp&&copilot){
+    var short2=copilot.indexOf(' (')>=0?copilot.substring(0,copilot.indexOf(' (')):copilot;
+    for(var i=0;i<cp.options.length;i++){ if(cp.options[i].value===short2){ cp.value=short2; break; } }
+  }
+}
+
+// ── 항구별 툴팁 데이터 ──
+var TIPS = {
+  // ── 공통 야간시간표 ──
+  night_table: '야간시간 기준:\n12~01월: 17:30~07:30\n02~03월: 18:00~07:00\n04~05월: 19:00~05:30\n06~07월: 19:30~05:30\n08~09월: 19:00~06:00\n10~11월: 17:30~07:00',
+
+  daesan: {
+    'tip-sc-ni':  '도선 시간(Commenced~Completed)이 야간에 해당할 시\n\n야간시간 기준:\n12~01월: 17:30~07:30\n02~03월: 18:00~07:00\n04~05월: 19:00~05:30\n06~07월: 19:30~05:30\n08~09월: 19:00~06:00\n10~11월: 17:30~07:00',
+    'tip-sc-fl':  '▶ Docking: 2만톤 이상 과적접안(19번석 제외)\n▶ Anchoring: 6만톤 이상 적재투묘(공선 및 SPM 제외)',
+    'tip-sc-wa':  '',
+    'tip-sc-sh':  '',
+    'tip-sc-ca':  '',
+    'tip-sc-ot':  '',
+    'tip-sc-ss':  '9KTS 미만의 지속선\n(Sea speed order 후 30분 경과 후에도 9KTS 미달성 시)',
+    'tip-sc-ov':  'SDWT 부두 접안능력 초과',
+    'tip-sc-sp':  '특별 도선',
+    'tip-bs-en':  '도선 시간(Commenced~Completed)이 야간에 해당할 시\n\n야간시간 기준:\n12~01월: 17:30~07:30\n02~03월: 18:00~07:00\n04~05월: 19:00~05:30\n06~07월: 19:30~05:30\n08~09월: 19:00~06:00\n10~11월: 17:30~07:00',
+    'tip-bs-eg':  '현대부두: 도선시간이 야간일 시 승·하선BOAT 모두\n\n국가부두 Guide Boat 조건:\n• MB1-01 여객선(COAST SERENA) 접·이안\n• MB4-01 2,000TEU 이상 선박\n• MB5-01 SDWT 6만톤 초과',
+    'tip-bs-dn':  '도선 시간(Commenced~Completed)이 야간에 해당할 시',
+    'tip-bs-dg':  '현대부두: 도선시간이 야간일 시 승·하선BOAT 모두\n\n국가부두 Guide Boat 조건:\n• MB1-01 여객선(COAST SERENA) 접·이안\n• MB4-01 2,000TEU 이상 선박\n• MB5-01 SDWT 6만톤 초과'
+  },
+  taean: {
+    'tip-sc-ni':  '도선 시간(Commenced~Completed)이 야간에 해당할 시\n\n야간시간 기준:\n12~01월: 17:30~07:30\n02~03월: 18:00~07:00\n04~05월: 19:00~05:30\n06~07월: 19:30~05:30\n08~09월: 19:00~06:00\n10~11월: 17:30~07:00',
+    'tip-sc-fl':  '▶ Docking: 2만톤 이상 과적접안(19번석 제외)\n▶ Anchoring: 6만톤 이상 적재투묘(공선 및 SPM 제외)',
+    'tip-sc-wa':  '',
+    'tip-sc-sh':  '',
+    'tip-sc-ca':  '',
+    'tip-sc-ot':  '',
+    'tip-sc-ss':  '9KTS 미만의 지속선\n(Sea speed order 후 30분 경과 후에도 9KTS 미달성 시)',
+    'tip-sc-ov':  'SDWT 부두 접안능력 초과',
+    'tip-sc-sp':  '특별 도선',
+    'tip-bs-en':  '도선 시간(Commenced~Completed)이 야간에 해당할 시\n\n야간시간 기준:\n12~01월: 17:30~07:30\n02~03월: 18:00~07:00\n04~05월: 19:00~05:30\n06~07월: 19:30~05:30\n08~09월: 19:00~06:00\n10~11월: 17:30~07:00',
+    'tip-bs-eg':  '현대부두: 도선시간이 야간일 시 승·하선BOAT 모두\n\n국가부두 Guide Boat 조건:\n• MB1-01 여객선(COAST SERENA) 접·이안\n• MB4-01 2,000TEU 이상 선박\n• MB5-01 SDWT 6만톤 초과',
+    'tip-bs-dn':  '도선 시간(Commenced~Completed)이 야간에 해당할 시',
+    'tip-bs-dg':  '현대부두: 도선시간이 야간일 시 승·하선BOAT 모두\n\n국가부두 Guide Boat 조건:\n• MB1-01 여객선(COAST SERENA) 접·이안\n• MB4-01 2,000TEU 이상 선박\n• MB5-01 SDWT 6만톤 초과'
+  },
+  dangjin: {
+    'tip-sc-ni':  '도선 시간(Commenced~Completed)이 야간에 해당할 시\n\n야간시간 기준:\n12~01월: 17:30~07:30\n02~03월: 18:00~07:00\n04~05월: 19:00~05:30\n06~07월: 19:30~05:30\n08~09월: 19:00~06:00\n10~11월: 17:30~07:00',
+    'tip-sc-fl':  '',
+    'tip-sc-wa':  '',
+    'tip-sc-sh':  '',
+    'tip-sc-ca':  '',
+    'tip-sc-ot':  '',
+    'tip-bs-en':  '도선 시간(Commenced~Completed)이 야간에 해당할 시\n\n야간시간 기준:\n12~01월: 17:30~07:30\n02~03월: 18:00~07:00\n04~05월: 19:00~05:30\n06~07월: 19:30~05:30\n08~09월: 19:00~06:00\n10~11월: 17:30~07:00',
+    'tip-bs-eg':  'Guide Boat: PS4 ↔ 당진화력부두',
+    'tip-bs-dn':  '도선 시간(Commenced~Completed)이 야간에 해당할 시',
+    'tip-bs-dg':  'Guide Boat: PS4 ↔ 당진화력부두'
+  },
+  boryeong: {
+    'tip-sc-ni':  '도선 시간(Commenced~Completed)이 야간에 해당할 시\n\n야간시간 기준:\n12~01월: 17:30~07:30\n02~03월: 18:00~07:00\n04~05월: 19:00~05:30\n06~07월: 19:30~05:30\n08~09월: 19:00~06:00\n10~11월: 17:30~07:00',
+    'tip-sc-fl':  '▶ Docking(FLOODING TIDE): 정박지 → 중부발전 들물 접안\n▶ Anchoring(UNDOCKING): MDB43 들물 출항',
+    'tip-sc-wa':  'LNG 출항선 14시간',
+    'tip-sc-sh':  '',
+    'tip-sc-ca':  '',
+    'tip-sc-ot':  '▶ Crossing Nav.: 항로 교행 시 출항선\n▶ 풍랑: 서해중부 한쪽 면바다 풍랑주의 발효 중(항내이동 제외)\n▶ Special: 특별 도선\n▶ Oversize: SDWT 부두 접안능력 초과',
+    'tip-sc-ss':  '9KTS 미만의 지속선\n(Sea speed order 후 30분 경과 후에도 9KTS 미달성 시)',
+    'tip-sc-ov':  'SDWT 부두 접안능력 초과',
+    'tip-sc-sp':  '특별 도선',
+    'tip-bs-en':  '도선 시간(Commenced~Completed)이 야간에 해당할 시\n\n야간시간 기준:\n12~01월: 17:30~07:30\n02~03월: 18:00~07:00\n04~05월: 19:00~05:30\n06~07월: 19:30~05:30\n08~09월: 19:00~06:00\n10~11월: 17:30~07:00',
+    'tip-bs-eg':  'Guide Boat 적용 조건:\n• 도선점이 포함된 경우 PS1에 / 투묘지↔부두일 경우 투묘지에\n• LNG일 경우 도선점에\n• 안개철: 04월~06월 / 성어기: 09월~10월\n\n야간 Guide Boat:\n11월~03월: 19시~05시\n04월~10월: 20시~04시',
+    'tip-bs-dn':  '도선 시간(Commenced~Completed)이 야간에 해당할 시',
+    'tip-bs-dg':  'Guide Boat 적용 조건:\n• 도선점이 포함된 경우 PS1에 / 투묘지↔부두일 경우 투묘지에\n• LNG일 경우 도선점에\n• 안개철: 04월~06월 / 성어기: 09월~10월\n\n야간 Guide Boat:\n11월~03월: 19시~05시\n04월~10월: 20시~04시'
+  }
+};
+
+function updateTooltips(port){
+  var tips = TIPS[port] || {};
+  var ids = ['tip-sc-ni','tip-sc-fl','tip-sc-wa','tip-sc-sh','tip-sc-ca','tip-sc-ot','tip-sc-ss','tip-sc-ov','tip-sc-sp',
+             'tip-bs-en','tip-bs-eg','tip-bs-dn','tip-bs-dg'];
+  // 증서2 Surcharge 툴팁도 동일하게 업데이트
+  var ids2 = ['tip-sc2-ni','tip-sc2-fl','tip-sc2-wa','tip-sc2-sh','tip-sc2-ca','tip-sc2-ot','tip-sc2-ss','tip-sc2-ov','tip-sc2-sp'];
+  var sc1keys = ['tip-sc-ni','tip-sc-fl','tip-sc-wa','tip-sc-sh','tip-sc-ca','tip-sc-ot','tip-sc-ss','tip-sc-ov','tip-sc-sp'];
+  // bs2 툴팁도 bs1과 동일 내용으로 업데이트
+  var bs2tipIds = ['tip-bs2-en','tip-bs2-eg','tip-bs2-dn','tip-bs2-dg'];
+  var bs1tipIds = ['tip-bs-en','tip-bs-eg','tip-bs-dn','tip-bs-dg'];
+  for(var bi=0; bi<bs2tipIds.length; bi++){
+    var bel=document.getElementById(bs2tipIds[bi]);
+    if(!bel) continue;
+    var btxt = tips[bs1tipIds[bi]] !== undefined ? tips[bs1tipIds[bi]] : '';
+    bel.textContent = btxt;
+    var bbtn=bel.previousElementSibling;
+    if(bbtn && bbtn.classList.contains('tip-btn')) bbtn.style.display = btxt ? '' : 'none';
+    bel.classList.remove('open');
+  }
+  for(var j=0; j<ids2.length; j++){
+    var el2=document.getElementById(ids2[j]);
+    if(!el2) continue;
+    var txt2 = tips[sc1keys[j]] !== undefined ? tips[sc1keys[j]] : '';
+    el2.textContent = txt2;
+    var btn2=el2.previousElementSibling;
+    if(btn2 && btn2.classList.contains('tip-btn')) btn2.style.display = txt2 ? '' : 'none';
+    el2.classList.remove('open');
+  }
+  for(var i=0; i<ids.length; i++){
+    var el = document.getElementById(ids[i]);
+    if(!el) continue;
+    var txt = tips[ids[i]] !== undefined ? tips[ids[i]] : '';
+    el.textContent = txt;
+    // 내용 없으면 ? 버튼 숨기기
+    var btn = el.previousElementSibling;
+    if(btn && btn.classList.contains('tip-btn')){
+      btn.style.display = txt ? '' : 'none';
+    }
+    el.classList.remove('open');
+  }
+}
+
+function syncFl(){
+  var dk=document.getElementById("sc-fl-dk");
+  var an=document.getElementById("sc-fl-an");
+  // 둘 다 독립 선택 가능 — 아무것도 안 누르면 미선택
+}
+
+function syncOA(){
+  var owner=getOwner(), agency=getAgency();
+  var ids=['co1','co2']; for(var i=0;i<ids.length;i++){ var el=document.getElementById(ids[i]); if(el) el.textContent=owner; }
+  var ids2=['ca1','ca2']; for(var i=0;i<ids2.length;i++){ var el=document.getElementById(ids2[i]); if(el) el.textContent=agency; }
+}
+
+function syncCertPilot(){
+  var pilot=gv('f-pilot');
+  var copilot=gv('f-copilot');
+  var mp=document.getElementById('c-mpilot');
+  var cp=document.getElementById('c-cpilot');
+  if(mp&&pilot){
+    var short=pilot.indexOf(' (')>=0 ? pilot.substring(0,pilot.indexOf(' (')) : pilot;
+    for(var i=0;i<mp.options.length;i++){ if(mp.options[i].value===short){ mp.value=short; break; } }
+  }
+  if(cp&&copilot){
+    var short2=copilot.indexOf(' (')>=0 ? copilot.substring(0,copilot.indexOf(' (')) : copilot;
+    for(var i=0;i<cp.options.length;i++){ if(cp.options[i].value===short2){ cp.value=short2; break; } }
+  }
+}
+
+function syncCert(){
+  var d=gv('f-date');
+  if(d){
+    var parts=d.split('-');
+    var fmt=parts[0]+' / '+parts[1]+' / '+parts[2];
+    var d1=document.getElementById('cert-d1'); if(d1) d1.textContent=fmt;
+    var d2=document.getElementById('cert-d2'); if(d2) d2.textContent=fmt;
+  }
+  var v=gv('f-vessel');
+  var reg=gv('f-registry');
+  var grt=gv('f-grt');
+  var ids=['cv1','cv2']; for(var i=0;i<ids.length;i++){ var el=document.getElementById(ids[i]); if(el) el.textContent=v; }
+  var ids2=['cf1','cf2']; for(var i=0;i<ids2.length;i++){ var el=document.getElementById(ids2[i]); if(el) el.textContent=reg; }
+  var eg=document.getElementById('cg1'); if(eg) eg.textContent=grt;
+  syncOA();
+  syncCertPilot();
+
+  var op=getRadio('rg-op'), fromVal='', toVal='';
+  if(op==='ARRIVAL'){
+    fromVal=(document.getElementById('f-from')||{}).value||'';
+    toVal=(document.getElementById('f-berth')||{}).value||'';
+  } else if(op==='DEPARTURE'){
+    fromVal=(document.getElementById('f-berth')||{}).value||'';
+    toVal=(document.getElementById('f-to')||{}).value||'';
+  } else if(op==='SHIFT'){
+    fromVal=(document.getElementById('f-sf')||{}).value||'';
+    toVal=(document.getElementById('f-st')||{}).value||'';
+  }
+  var cf=document.getElementById('c-from'); if(cf) cf.textContent=fromVal;
+  var ct=document.getElementById('c-to'); if(ct) ct.textContent=toVal;
+  var be=document.getElementById('bs-emb'); if(be) be.textContent=fromVal?' '+fromVal+' ':' ';
+  var bd=document.getElementById('bs-dis'); if(bd) bd.textContent=toVal?' '+toVal+' ':' ';
+  // 증서2 from/to (증서2 독립 작업구분 op2 사용)
+  var op2=getRadio('rg-op2'), fromVal2='', toVal2='';
+  if(op2==='ARRIVAL'){
+    fromVal2=(document.getElementById('f-from2')||{}).value||'';
+    toVal2=(document.getElementById('f-berth2')||{}).value||'';
+  } else if(op2==='DEPARTURE'){
+    fromVal2=(document.getElementById('f-berth2')||{}).value||'';
+    toVal2=(document.getElementById('f-to2')||{}).value||'';
+  } else if(op2==='SHIFT'){
+    fromVal2=(document.getElementById('f-sf2')||{}).value||'';
+    toVal2=(document.getElementById('f-st2')||{}).value||'';
+  }
+  var cf2=document.getElementById('c-from2'); if(cf2) cf2.textContent=fromVal2;
+  var ct2=document.getElementById('c-to2'); if(ct2) ct2.textContent=toVal2;
+  // Boat No.2: 증서2 from/to 연동 (fromVal2/toVal2 확정 후 세팅)
+  var be2=document.getElementById('bs2-emb'); if(be2) be2.textContent=fromVal2?' '+fromVal2+' ':' ';
+  var bd2=document.getElementById('bs2-dis'); if(bd2) bd2.textContent=toVal2?' '+toVal2+' ':' ';
+  // Boat No.2 날짜/선박정보 동기화
+  var d2b=document.getElementById('cert-d2b'); if(d2b) d2b.textContent=document.getElementById('cert-d2')?document.getElementById('cert-d2').textContent:'';
+  var b2ids=[['cv2b','cv2'],['cf2b','cf2'],['co2b','co2'],['ca2b','ca2']];
+  for(var bi=0;bi<b2ids.length;bi++){var bs=document.getElementById(b2ids[bi][1]);var bt=document.getElementById(b2ids[bi][0]);if(bs&&bt)bt.textContent=bs.textContent;}
+  // Boat No.2 Sat/Sun/Holiday 자동체크 연동
+  var bs2s=document.getElementById('bs2-sat'); if(bs2s) bs2s.checked=isKrHoliday(document.getElementById('f-date')?document.getElementById('f-date').value:'');
+  // Boat No.2 캔버스 초기화
+  setTimeout(function(){ initCS('cv-cert-boat2'); }, 450);
+
+  var t=gv('f-time');
+  var cc=document.getElementById('c-com'); if(cc&&!cc.value&&t) cc.value=t;
+
+  setTimeout(function(){ initCS('cv-cert-master'); initCS('cv-cert-boat'); initCS('cv-cert-master2'); }, 400);
+  // 증서2 공통 필드 동기화
+  var d2=document.getElementById('cert2-d1'); if(d2) d2.textContent=document.getElementById('cert-d1').textContent;
+  var ids2sync=[['cv1b','cv1'],['cf1b','cf1'],['co1b','co1'],['cg1b','cg1'],['ca1b','ca1']];
+  // 선장 이름 동기화
+  for(var ii=0;ii<ids2sync.length;ii++){
+    var src=document.getElementById(ids2sync[ii][1]);
+    var dst=document.getElementById(ids2sync[ii][0]);
+    if(src&&dst) dst.textContent=src.textContent;
+  }
+  // 증서2 파일럿 자동 연동
+  syncCert2Pilot();
+}
+
+function fmtTime(inp){
+  inp.addEventListener('input', function(){
+    var v=this.value.replace(/[^0-9]/g,'');
+    if(v.length>=3) v=v.slice(0,2)+':'+v.slice(2,4);
+    this.value=v;
+  });
+  inp.addEventListener('blur', function(){
+    var m=this.value.match(/^(\d{1,2}):?(\d{2})$/);
+    if(m){
+      var h=Math.min(parseInt(m[1]),23), mn=Math.min(parseInt(m[2]),59);
+      this.value=(h<10?'0':'')+h+':'+(mn<10?'0':'')+mn;
+    }
+    if(this.id==='c-com'||this.id==='c-done'||this.id==='c2-com'||this.id==='c2-done') autoCheckNight();
+  });
+}
+var timeIds=['c-ord','c-com','c-done','bs-et1','bs-et2','bs-dt1','bs-dt2','rm-fl-t','rm-ll-t','rm-da-t','rm-aa-t','rm-mo-t','rm-um-t','c2-ord','c2-com','c2-done','rm2-fl-t','rm2-ll-t','rm2-da-t','rm2-aa-t','rm2-mo-t','rm2-um-t','bs2-et1','bs2-et2','bs2-dt1','bs2-dt2'];
+for(var ti=0;ti<timeIds.length;ti++){
+  var tel=document.getElementById(timeIds[ti]);
+  if(tel) fmtTime(tel);
+}
+
+function doPrint(){
+  syncCert();
+
+  /* canvas를 DOM에서 완전히 제거하고 img로 교체 → 인쇄 후 복원 */
+  var cvIds=['cv-cert-master','cv-cert-boat','cv-cert-master2','cv-cert-boat2'];
+  var swapped=[];
+
+  for(var i=0;i<cvIds.length;i++){
+    var cv=document.getElementById(cvIds[i]);
+    if(!cv||!cv.parentNode) continue;
+    var parent=cv.parentNode;
+    var next=cv.nextSibling;
+
+    /* img 생성 */
+    var img=document.createElement('img');
+    img.src=cv.toDataURL('image/png');
+    img.style.cssText='display:block;width:100%;height:220px;border:1px dashed #999;border-radius:3px;object-fit:contain';
+
+    /* canvas를 DOM에서 완전히 제거하고 img 삽입 */
+    parent.removeChild(cv);
+    parent.insertBefore(img, next);
+
+    swapped.push({cv:cv, img:img, parent:parent, next:next});
+  }
+
+  setTimeout(function(){
+    window.print();
+    /* 인쇄 후 img 제거하고 canvas 복원 */
+    setTimeout(function(){
+      for(var i=0;i<swapped.length;i++){
+        var s=swapped[i];
+        if(s.img.parentNode) s.img.parentNode.removeChild(s.img);
+        s.parent.insertBefore(s.cv, s.next);
+      }
+    }, 1000);
+  }, 400);
+}
+
+
+
+
+function gv(id){ var e=document.getElementById(id); return e?e.value:''; }
+
+function gatherData(){
+  return {
+    date: gv('f-date'),
+    time: gv('f-time'),
+    date2: gv('f-date2'),
+    time2: gv('f-time2'),
+    op2: getRadio('rg-op2')||'',
+    op: getRadio('rg-op'),
+    berth: gv('f-berth'),
+    fromPS: gv('f-from'),
+    toPS: gv('f-to'),
+    shiftFrom: gv('f-sf'),
+    shiftTo: gv('f-st'),
+    fromPS2: gv('f-from2'),
+    toPS2: gv('f-berth2'),
+    shiftFrom2: gv('f-sf2'),
+    shiftTo2: gv('f-st2'),
+    vessel: gv('f-vessel'),
+    flag: gv('f-flag'),
+    registry: gv('f-registry'),
+    callsign: gv('f-callsign'),
+    owner: getOwner(),
+    agency: getAgency(),
+    loa: gv('f-loa'),
+    beam: gv('f-beam'),
+    draftF: gv('f-draftf'),
+    draftA: gv('f-drafta'),
+    dwt: gv('f-dwt'),
+    grt: gv('f-grt'),
+    gyro: gv('f-gyro'),
+    gyroEW: getRadio('rg-gyroew'),
+    shipType: gv('f-shiptype'),
+    prop: getRadio('rg-prop'),
+    rot: getRadio('rg-rot'),
+    engType: getRadio('rg-engtype'),
+    engPwr: gv('f-engpwr'),
+    engUnit: getRadio('rg-engunit'),
+    bow: gv('f-bow'),
+    stern: gv('f-stern'),
+    anchor: getRadio('rg-anc'),
+    dropMethod: getRadio('rg-drop'),
+    vesdef: gv('f-vesdef'),
+    pilot: gv('f-pilot'),
+    pgrade: gv('f-pgrade'),
+    copilot: gv('f-copilot'),
+    cgrade: gv('f-cgrade'),
+    vhf: gv('f-vhf'),
+    wvhf: gv('f-wvhf'),
+    master: gv('f-master'),
+    ptel: gv('f-ptel'),
+    berthSide: getRadio('rg-side'),
+    passage: gv('f-passage'),
+    weather: gv('f-weather'),
+    conting: gv('f-conting'),
+    eng: gv('f-eng'),
+    air: gv('f-air'),
+    engdef: gv('f-engdef'),
+    astern: gv('f-astern'),
+    tugCount: getRadio('rg-tc'),
+    bpFwd: gv('f-bp-fwd'),
+    bpAft: gv('f-bp-aft'),
+    chk: JSON.parse(JSON.stringify(chk)),
+    tugSel: JSON.parse(JSON.stringify(tugSel)),
+    mooring: {
+      headP: getMoorVal('ml-head-p'), headS: getMoorVal('ml-head-s'),
+      obrP:  getMoorVal('ml-obr-p'),  obrS:  getMoorVal('ml-obr-s'),
+      brP:   getMoorVal('ml-br-p'),   brS:   getMoorVal('ml-br-s'),
+      ibrP:  getMoorVal('ml-ibr-p'),  ibrS:  getMoorVal('ml-ibr-s'),
+      fspP:  getMoorVal('ml-fsp-p'),  fspS:  getMoorVal('ml-fsp-s'),
+      aspP:  getMoorVal('ml-asp-p'),  aspS:  getMoorVal('ml-asp-s'),
+      ibr2P: getMoorVal('ml-ibr2-p'), ibr2S: getMoorVal('ml-ibr2-s'),
+      br2P:  getMoorVal('ml-br2-p'),  br2S:  getMoorVal('ml-br2-s'),
+      obr2P: getMoorVal('ml-obr2-p'), obr2S: getMoorVal('ml-obr2-s'),
+      sternP:getMoorVal('ml-stern-p'),sternS:getMoorVal('ml-stern-s')
+    }
+  };
+}
+
+function tempSave(){
+  var data = gatherData();
+  if(!data.vessel.trim()){ showToast('선박명을 입력하세요'); return; }
+
+  // 기존 임시저장 있으면 업데이트, 없으면 새로 추가
+  var existIdx = -1;
+  for(var i=0;i<recs.length;i++){
+    if(recs[i].id === tempSaveId){ existIdx=i; break; }
+  }
+
+  var rec = data;
+  if(existIdx >= 0){
+    rec.id = recs[existIdx].id;
+    rec.savedAt = new Date().toISOString();
+  } else {
+    rec.id = 'tmp_' + String(Date.now());
+    rec.savedAt = new Date().toISOString();
+    tempSaveId = rec.id;
+  }
+  rec.port = curPort;
+  rec.masterSig = getSig('cv-master');
+  rec.pilotSig = getSig('cv-pilot');
+  rec.signed = false;
+  rec.isTemp = true;
+
+  if(existIdx >= 0){
+    recs[existIdx] = rec;
+  } else {
+    recs.unshift(rec);
+  }
+  lsSave();
+  showToast('임시저장되었습니다 ✓');
+  setTimeout(function(){ goHome(); }, 800);
+}
+
+var tempSaveId = null;
+
+function saveRecord(){
+  var data=gatherData();
+  if(!data.vessel.trim()){ showToast('선박명을 입력하세요'); return; }
+  var rec = data;
+  rec.id = String(Date.now());
+  rec.savedAt = new Date().toISOString();
+  rec.port = curPort;
+  rec.masterSig = getSig('cv-master');
+  rec.pilotSig = getSig('cv-pilot');
+  rec.signed = !!(rec.masterSig && rec.pilotSig);
+  recs.unshift(rec);
+  lsSave();
+  showToast('✅ 저장 완료!');
+  setTimeout(goHome, 1200);
+}
+
+function downloadMPXReport(rec){
+  var p = PD[rec.port]||{};
+  var vessel = (rec.vessel||'MPX').replace(/\s+/g,'_');
+  var pob = (rec.time||'0000').replace(':','');
+  var pilotShort = rec.pilot ? rec.pilot.replace(/\s*\/.*$/,'').trim().replace(/\s+/g,'_') : 'PILOT';
+  var dateClean=(rec.date||getTodayStr()).replace(/-/g,'');
+  var fname=vessel+'_'+dateClean+'_MPX_Report.html';
+
+  // 체크리스트 렌더
+  function clRow(label, st){
+    var icon = st==='checked'?'&#10003;':st==='na'?'N/A':'&#9633;';
+    var strike = st==='checked'?' style="text-decoration:line-through;color:#999"':'';
+    return '<tr><td style="width:28px;text-align:center;font-weight:700;color:'+(st==='checked'?'#166534':st==='na'?'#991b1b':'#aaa')+'">'+icon+'</td><td'+strike+'>'+label+'</td></tr>';
+  }
+  function clSection(title, items, prefix){
+    var h='<tr><td colspan="2" style="background:#dce8f5;font-weight:800;font-size:10pt;padding:5px 8px;border-bottom:2px solid #1a3a6b">'+title+'</td></tr>';
+    for(var i=0;i<items.length;i++) h+=clRow(items[i],(rec.chk||{})[prefix+'-'+i]);
+    return h;
+  }
+
+  // 예선 테이블
+  var tugRows='';
+  var portTugs = p.tugs||[];
+  for(var i=0;i<portTugs.length;i++){
+    var tug=portTugs[i];
+    var pos=(rec.tugs||{})[tug.n]||'-';
+    if(pos&&pos!=='-') tugRows+='<tr><td>'+tug.n+'</td><td style="text-align:center">'+tug.g+'</td><td>'+tug.h+'</td><td style="font-weight:700;color:#1a3a6b">'+pos+'</td></tr>';
+  }
+
+  var op=rec.op||'';
+  var fromVal='',toVal='';
+  if(op==='ARRIVAL'){fromVal=rec.fromPS||'';toVal=rec.berth||'';}
+  else if(op==='DEPARTURE'){fromVal=rec.berth||'';toVal=rec.toPS||'';}
+  else if(op==='SHIFT'){fromVal=rec.shiftFrom||'';toVal=rec.shiftTo||'';}
+
+  var h='<!DOCTYPE html><html><head><meta charset="UTF-8"/>';
+  h+='<title>MPX Report — '+rec.vessel+' '+rec.date+'</title>';
+  h+='<style>';
+  h+='body{font-family:Arial,sans-serif;font-size:10pt;margin:12mm 10mm;color:#111}';
+  h+='h1{font-size:15pt;font-weight:900;color:#1a3a6b;border-bottom:3px solid #1a3a6b;padding-bottom:6px;margin-bottom:10px}';
+  h+='h2{font-size:11pt;font-weight:800;color:#1a3a6b;margin:14px 0 6px;border-left:4px solid #1a3a6b;padding-left:8px}';
+  h+='table{width:100%;border-collapse:collapse;margin-bottom:10px;font-size:9.5pt}';
+  h+='td,th{border:1px solid #bbb;padding:4px 7px;vertical-align:middle}';
+  h+='th{background:#1a3a6b;color:#fff;font-weight:700;text-align:left}';
+  h+='.lbl{font-weight:700;background:#eef4ff;width:30%}';
+  h+='.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:9pt;font-weight:700}';
+  h+='.signed{background:#dcfce7;color:#166534}.draft{background:#fef3c7;color:#92400e}';
+  h+='@page{size:A4;margin:12mm 10mm}';
+  h+='</style></head><body>';
+
+  // 헤더
+  h+='<h1>&#9875; MPX REPORT</h1>';
+  h+='<table><tr><td class="lbl">선박명</td><td style="font-weight:800;font-size:11pt">'+(rec.vessel||'')+'</td>';
+  h+='<td class="lbl">항구</td><td>'+(p.name||rec.port||'')+'</td></tr>';
+  h+='<tr><td class="lbl">날짜</td><td>'+(rec.date||'')+'</td>';
+  h+='<td class="lbl">POB 시간</td><td>'+(rec.time||'')+'</td></tr>';
+  h+='<tr><td class="lbl">작업</td><td>'+(op||'')+'</td>';
+  h+='<td class="lbl">부두</td><td>'+fromVal+' → '+toVal+'</td></tr>';
+  h+='<tr><td class="lbl">서명상태</td><td colspan="3"><span class="badge '+(rec.signed?'signed':'draft')+'">'+(rec.signed?'서명 완료':'임시저장')+'</span></td></tr></table>';
+
+  // 선박 정보
+  h+='<h2>&#128674; 선박 정보</h2><table>';
+  var vrows=[['선박명',rec.vessel],['Owner/Operator',rec.owner],['Agency',rec.agency],['선적국',rec.flag],['선적항',rec.registry],['Call Sign',rec.callsign],['선종',rec.shipType],['LOA',(rec.loa||'')+' m'],['Beam',(rec.beam||'')+' m'],['Fwd Draft',(rec.draftF||'')+' m'],['Aft Draft',(rec.draftA||'')+' m'],['DWT',(rec.dwt||'')+' MT'],['GRT',rec.grt],['추진',rec.prop],['회전',rec.rot],['Bow Thruster',(rec.bow||'')+' kW'],['Stern Thruster',(rec.stern||'')+' kW'],['앵커',rec.anchor],['Engine Notice',(rec.eng||'')+' min'],['Air Start Limit',rec.air],['기관 결함',rec.engdef||'NIL'],['선박 결함',rec.vesdef||'NIL']];
+  for(var i=0;i<vrows.length;i++) h+='<tr><td class="lbl">'+vrows[i][0]+'</td><td>'+(vrows[i][1]||'-')+'</td></tr>';
+  h+='</table>';
+
+  // 도선 정보
+  h+='<h2>&#128100; 도선 정보</h2><table>';
+  var prows=[['Main Pilot',rec.pilot],['등급',rec.pgrade],['Co Pilot',rec.copilot||'없음'],['Co 등급',rec.cgrade||'-'],['선장',rec.master],['연락처',rec.ptel],['VHF Main',rec.vhf],['VHF Working',rec.wvhf],['접안 방향',rec.berthSide],['조류/바람',rec.conditions||'-']];
+  for(var i=0;i<prows.length;i++) h+='<tr><td class="lbl">'+prows[i][0]+'</td><td>'+(prows[i][1]||'-')+'</td></tr>';
+  h+='</table>';
+
+  // 체크리스트
+  h+='<h2>&#9989; 체크리스트</h2>';
+  h+='<table>';
+  h+=clSection('선박 준비사항 / Ship\'s Requirements', CL_SHIP, 'sh');
+  h+=clSection('장비 설정 / Equipment Setup', CL_EQUIP, 'eq');
+  h+='</table>';
+
+  // 예선
+  if(tugRows){
+    h+='<h2>&#128676; 예선 배치</h2>';
+    h+='<table><tr><th>예선명</th><th>GT</th><th>HP/BP</th><th>배치 위치</th></tr>'+tugRows+'</table>';
+  }
+
+  // MPX 서명
+  if(rec.masterSig||rec.pilotSig){
+    h+='<h2>&#9997;&#65039; MPX 서명</h2><table><tr>';
+    h+='<td style="width:50%;text-align:center;padding:10px">';
+    if(rec.masterSig) h+='<img src="'+rec.masterSig+'" style="max-width:100%;max-height:80px"><br>';
+    h+='<div style="border-top:1px solid #555;margin-top:4px;font-weight:700;font-size:9pt">Master</div></td>';
+    h+='<td style="width:50%;text-align:center;padding:10px">';
+    if(rec.pilotSig) h+='<img src="'+rec.pilotSig+'" style="max-width:100%;max-height:80px"><br>';
+    h+='<div style="border-top:1px solid #555;margin-top:4px;font-weight:700;font-size:9pt">Pilot</div></td>';
+    h+='</tr></table>';
+  }
+
+  // 저장 시각
+  h+='<div style="margin-top:16px;font-size:8pt;color:#6b7280;border-top:1px solid #ddd;padding-top:6px">';
+  h+='저장 시각: '+new Date(rec.savedAt).toLocaleString('ko-KR')+'&nbsp;&nbsp;|&nbsp;&nbsp;';
+  h+='SOLAS Reg. V/23 · IMO Res. A.1045(27) · Daesan Pilot Association</div>';
+  h+='</body></html>';
+
+  var blob=new Blob([h],{type:'text/html;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download=fname;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+
+function renderRecs(){
+  document.getElementById('rec-count').textContent=recs.length;
+  var c=document.getElementById('recent-records');
+  if(!recs.length){ c.innerHTML='<div class="empty">저장된 기록 없음</div>'; return; }
+  var h='';
+  for(var i=0;i<Math.min(recs.length,10);i++){
+    var r=recs[i], p=PD[r.port]||{};
+    h+='<div class="rec-item" onclick="viewRec(\''+r.id+'\')">';
+    h+='<div><div class="rv">'+(r.vessel||'(미입력)')+'</div>';
+    h+='<div class="rm">'+(p.en||r.port)+' &middot; '+(r.berth||'-')+' &middot; '+r.date+' '+r.time+'</div></div>';
+    h+='<div class="rbadge '+(r.signed?'signed':'draft')+'">'+(r.signed?'서명완료':'임시저장')+'</div>';
+    h+='</div>';
+  }
+  c.innerHTML=h;
+}
+
+function viewRec(id){
+  var rec=null;
+  for(var i=0;i<recs.length;i++){ if(recs[i].id===id){ rec=recs[i]; break; } }
+  if(!rec) return;
+  viewId=id;
+  var p=PD[rec.port]||{};
+  document.getElementById('rec-title').textContent=rec.vessel||'(미입력)';
+  document.getElementById('rec-port').textContent=p.en||rec.port;
+  var total=CL_SHIP.length+CL_EQUIP.length;
+  var ck=0,na=0;
+  for(var k in (rec.chk||{})){ if(rec.chk[k]==='checked') ck++; else if(rec.chk[k]==='na') na++; }
+  var rows=[['날짜',rec.date],['시간',rec.time],['작업',rec.op],['부두',rec.berth||'-'],['선박명',rec.vessel],['기국',rec.flag||'-'],['LOA',(rec.loa||'-')+'m'],['GRT',rec.grt||'-'],['도선사',rec.pilot||'-'],['선장',rec.master||'-'],['체크리스트','완료:'+ck+'/N/A:'+na+'/미완:'+(total-ck-na)]];
+  var h='';
+  for(var i=0;i<rows.length;i++) h+='<div class="rrow"><span class="rl">'+rows[i][0]+'</span><span class="rv2">'+(rows[i][1]||'-')+'</span></div>';
+  if(rec.masterSig) h+='<div style="margin-top:8px"><div style="font-size:11px;color:#4b5563;font-weight:700;margin-bottom:4px">선장 서명</div><img src="'+rec.masterSig+'" style="width:100%;max-width:280px;border-radius:8px;border:1px solid #c0d4eb"/></div>';
+  document.getElementById('rec-content').innerHTML=h;
+  /* 임시저장 기록이면 이어서 작성하기 버튼 표시 */
+  var contWrap=document.getElementById('rec-continue-wrap');
+  if(contWrap) contWrap.style.display=(rec.isTemp?'block':'none');
+  showScreen('screen-record');
+}
+
+function loadRec(id){
+  var rec=null;
+  for(var i=0;i<recs.length;i++){ if(recs[i].id===id){ rec=recs[i]; break; } }
+  if(!rec){ showToast('기록을 찾을 수 없습니다'); return; }
+
+  /* 항구 선택 및 폼 초기화 */
+  selectPort(rec.port);
+  tempSaveId = rec.id; /* 같은 ID로 덮어쓰기 */
+
+  /* 작업구분 */
+  if(rec.op) setRadioVal('rg-op', rec.op);
+  updateBerths(); updateBerths2();
+
+  /* 날짜/시간 */
+  function sv(id,v){ var e=document.getElementById(id); if(e&&v!==undefined&&v!==null) e.value=v; }
+  function sr(rg,v){ if(v) setRadioVal(rg,v); }
+
+  sv('f-date', rec.date); sv('f-time', rec.time);
+  sv('f-date2', rec.date2); sv('f-time2', rec.time2);
+  if(rec.op2) setRadioVal('rg-op2', rec.op2);
+
+  /* 항법 */
+  sv('f-berth', rec.berth); sv('f-from', rec.fromPS); sv('f-to', rec.toPS);
+  sv('f-sf', rec.shiftFrom); sv('f-st', rec.shiftTo);
+  sv('f-from2', rec.fromPS2); sv('f-berth2', rec.toPS2);
+  sv('f-sf2', rec.shiftFrom2); sv('f-st2', rec.shiftTo2);
+
+  /* 선박정보 */
+  sv('f-vessel', rec.vessel); sv('f-flag', rec.flag); sv('f-registry', rec.registry);
+  sv('f-callsign', rec.callsign); sv('f-loa', rec.loa); sv('f-beam', rec.beam);
+  sv('f-draftf', rec.draftF); sv('f-drafta', rec.draftA);
+  sv('f-dwt', rec.dwt); sv('f-grt', rec.grt);
+  sv('f-gyro', rec.gyro); sr('rg-gyroew', rec.gyroEW);
+  sv('f-shiptype', rec.shipType);
+  sr('rg-prop', rec.prop); sr('rg-rot', rec.rot);
+  sr('rg-engtype', rec.engType); sv('f-engpwr', rec.engPwr); sr('rg-engunit', rec.engUnit);
+  sv('f-bow', rec.bow); sv('f-stern', rec.stern);
+  sr('rg-anc', rec.anchor); sr('rg-drop', rec.dropMethod);
+  sv('f-vesdef', rec.vesdef); sv('f-eng', rec.eng); sv('f-air', rec.air);
+  sv('f-engdef', rec.engdef); sv('f-astern', rec.astern);
+
+  /* owner/agency — custom input */
+  if(rec.owner){ var oc=document.getElementById('f-owner-c'); if(oc) oc.value=rec.owner; if(typeof syncOA==='function') syncOA(); }
+  if(rec.agency){ var ac=document.getElementById('f-agency-c'); if(ac) ac.value=rec.agency; if(typeof syncOA==='function') syncOA(); }
+
+  /* 도선정보 */
+  sv('f-pilot', rec.pilot); sv('f-pgrade', rec.pgrade);
+  sv('f-copilot', rec.copilot); sv('f-cgrade', rec.cgrade);
+  sv('f-master', rec.master); sv('f-ptel', rec.ptel);
+  sv('f-vhf', rec.vhf); sv('f-wvhf', rec.wvhf);
+  sr('rg-side', rec.berthSide); sr('rg-tc', rec.tugCount);
+  sv('f-passage', rec.passage); sv('f-weather', rec.weather);
+  sv('f-conting', rec.conting); sv('f-bp-fwd', rec.bpFwd); sv('f-bp-aft', rec.bpAft);
+
+  /* 체크리스트 복원 */
+  if(rec.chk){ chk=JSON.parse(JSON.stringify(rec.chk)); buildCL('cl-ship',CL_SHIP,'sh'); buildCL('cl-equip',CL_EQUIP,'eq'); }
+
+  /* 예선 복원 */
+  if(rec.tugSel){ tugSel=JSON.parse(JSON.stringify(rec.tugSel)); buildTugs(PD[rec.port].tugs); }
+
+  /* 무링 복원 */
+  if(rec.mooring){
+    var m=rec.mooring;
+    function sm(id,v){ var e=document.getElementById(id); if(e&&v) e.value=v; }
+    sm('ml-head-p',m.headP); sm('ml-head-s',m.headS); sm('ml-obr-p',m.obrP); sm('ml-obr-s',m.obrS);
+    sm('ml-br-p',m.brP); sm('ml-br-s',m.brS); sm('ml-ibr-p',m.ibrP); sm('ml-ibr-s',m.ibrS);
+    sm('ml-fsp-p',m.fspP); sm('ml-fsp-s',m.fspS); sm('ml-asp-p',m.aspP); sm('ml-asp-s',m.aspS);
+    sm('ml-ibr2-p',m.ibr2P); sm('ml-ibr2-s',m.ibr2S); sm('ml-br2-p',m.br2P); sm('ml-br2-s',m.br2S);
+    sm('ml-obr2-p',m.obr2P); sm('ml-obr2-s',m.obr2S); sm('ml-stern-p',m.sternP); sm('ml-stern-s',m.sternS);
+  }
+
+  updateProg();
+  showToast('이어서 작성합니다 ✓');
+  showScreen('screen-form');
+  showTab('tab-vessel');
+}
+
+function deleteRecord(){
+  document.getElementById('del-modal-bg').classList.add('show');
+}
+function closeDelModal(){
+  document.getElementById('del-modal-bg').classList.remove('show');
+}
+function confirmDelete(){
+  closeDelModal();
+  var newRecs=[];
+  for(var i=0;i<recs.length;i++){ if(recs[i].id!==viewId) newRecs.push(recs[i]); }
+  recs=newRecs; lsSave();
+  showToast('삭제되었습니다');
+  setTimeout(goHome, 800);
+}
+
+function emailRecord(){
+  var rec=null;
+  for(var i=0;i<recs.length;i++){ if(recs[i].id===viewId){ rec=recs[i]; break; } }
+  if(!rec) return;
+  var p=PD[rec.port]||{};
+  var op=rec.op||'';
+  var fromVal='', toVal='';
+  if(op==='ARRIVAL'){ fromVal=rec.fromPS||''; toVal=rec.berth||''; }
+  else if(op==='DEPARTURE'){ fromVal=rec.berth||''; toVal=rec.toPS||''; }
+  else if(op==='SHIFT'){ fromVal=rec.shiftFrom||''; toVal=rec.shiftTo||''; }
+  var dateStr=rec.date?(rec.date.split('-').join(' / ')):'';
+  var vessel=(rec.vessel||'MPX').replace(/\s+/g,'_');
+  var dateClean2=(rec.date||getTodayStr()).replace(/-/g,'');
+  var fname=vessel+'_'+dateClean2+'_Certificate.html';
+
+  // Read current cert screen values
+  function gv(id){ var el=document.getElementById(id); return el?el.value||'':''; }
+  function gt(id){ var el=document.getElementById(id); return el?el.textContent||'':''; }
+  function gc(id){ var el=document.getElementById(id); return el&&el.checked?true:false; }
+  function getSigImg(id){
+    var el=document.getElementById(id);
+    if(!el) return '';
+    try{
+      // 서명 영역만 crop
+      var ctx=el.getContext('2d');
+      var w=el.width, h=el.height;
+      var data=ctx.getImageData(0,0,w,h).data;
+      var minX=w,maxX=0,minY=h,maxY=0,found=false;
+      for(var y=0;y<h;y++){
+        for(var x=0;x<w;x++){
+          var a=data[(y*w+x)*4+3];
+          if(a>10){ found=true; if(x<minX)minX=x; if(x>maxX)maxX=x; if(y<minY)minY=y; if(y>maxY)maxY=y; }
+        }
+      }
+      if(!found) return el.toDataURL();
+      var pad=20;
+      minX=Math.max(0,minX-pad); minY=Math.max(0,minY-pad);
+      maxX=Math.min(w,maxX+pad); maxY=Math.min(h,maxY+pad);
+      var cw=maxX-minX, ch=maxY-minY;
+      var tmp=document.createElement('canvas');
+      tmp.width=cw; tmp.height=ch;
+      tmp.getContext('2d').drawImage(el,minX,minY,cw,ch,0,0,cw,ch);
+      return tmp.toDataURL();
+    }catch(e){ return ''; }
+  }
+
+  var ordTime=gv('c-ord');
+  var comTime=gv('c-com');
+  var doneTime=gv('c-done');
+  var maxDraft=gv('c-draft');
+  var mainPilot=gv('c-mpilot')||rec.pilot||'';
+  var coPilot=gv('c-cpilot')||rec.copilot||'';
+
+  // Surcharges
+  var sc='';
+  sc+='<br>';
+  if(gc('sc-dg')) sc+='[v] DG CGO Ship<br>'; else sc+='[ ] DG CGO Ship<br>';
+  if(gc('sc-ni')) sc+='[v] Night<br>'; else sc+='[ ] Night<br>';
+  if(gc('sc-sa')) sc+='[v] Sat/Sun/Holiday<br>'; else sc+='[ ] Sat/Sun/Holiday<br>';
+  if(gc('sc-ca')) sc+='[v] Cancel<br>'; else sc+='[ ] Cancel<br>';
+  var fldk=gc('sc-fl-dk'), flan=gc('sc-fl-an');
+  if(fldk||flan){ var fltxt='Flooding tide ('+(fldk&&flan?'Docking+Anchoring':fldk?'Docking':'Anchoring')+')'; sc+='[v] '+fltxt+'<br>'; } else sc+='[ ] Flooding tide<br>';
+  if(gc('sc-wa')) sc+='[v] Waiting ('+gv('sc-hrs')+' hrs)<br>'; else sc+='[ ] Waiting (__hrs)<br>';
+  if(gc('sc-sh')) sc+='[v] Short notice<br>'; else sc+='[ ] Short notice<br>';
+  if(gc('sc-ss')) sc+='[v] Slow Speed<br>'; else sc+='[ ] Slow Speed<br>';
+  if(gc('sc-ov')) sc+='[v] Oversize<br>'; else sc+='[ ] Oversize<br>';
+  if(gc('sc-sp')) sc+='[v] Special<br>'; else sc+='[ ] Special<br>';
+  if(gc('sc-ot')) sc+='[v] Other: '+gv('sc-ot-txt')+'<br>'; else sc+='[ ] Other: <br>';
+
+  // Boat service checkboxes
+  var bsat=gc('bs-sat'), ben=gc('bs-en'), beg=gc('bs-eg'), bdn=gc('bs-dn'), bdg=gc('bs-dg');
+  var bet1=gv('bs-et1'), bet2=gv('bs-et2'), bdt1=gv('bs-dt1'), bdt2=gv('bs-dt2');
+  var bembsj=gv('bs-emb-sj'), bdissj=gv('bs-dis-sj');
+  var bembBerth=gt('bs-emb').trim(), bdisBerth=gt('bs-dis').trim();
+  var bsRemarks=gv('bs-remarks');
+
+  // Signatures
+  var masterSigImg=getSigImg('cv-cert-master');
+  var boatSigImg=getSigImg('cv-cert-boat');
+
+  var h='<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>'+fname+'</title>';
+  h+='<style>body{font-family:Times New Roman,serif;font-size:10.5pt;margin:6mm 8mm}@page{size:A4;margin:6mm 8mm}';
+  h+='h2{text-align:center;font-size:14pt;font-weight:700;text-decoration:underline;letter-spacing:2px;margin-bottom:8px}';
+  h+='table{width:100%;border-collapse:collapse;margin-bottom:5px;font-size:10pt}';
+  h+='td{border:1px solid #555;padding:5px 7px;vertical-align:middle}';
+  h+='.lb{font-weight:700}.cert{border:1px solid #aaa;padding:12px;margin-bottom:10px;page-break-inside:avoid}';
+  h+='.sig-td{height:120px;vertical-align:bottom;text-align:center;width:45%;min-width:120px}';
+  h+='.sig-td img{max-width:100%;max-height:160px;display:block;margin:0 auto;filter:contrast(1.6) brightness(0.6)}';
+  h+='.ml{border-top:1px solid #555;padding-top:3px;font-weight:700;font-size:9.5pt;text-align:center;margin-top:5px}';
+  h+='p{font-size:8.5pt;margin-top:5px;line-height:1.5}.dv{text-align:center;color:#999;font-size:8pt;margin:8px 0}';
+  h+='.rem-td{vertical-align:top;word-break:break-word;overflow-wrap:break-word}';
+  h+='</style></head><body>';
+  h+='<div class="cert"><h2>CERTIFICATE OF PILOTAGE</h2>';
+  h+='<div style="text-align:right;font-size:9pt;margin-bottom:5px">DATE : '+dateStr+'</div>';
+  h+='<table><colgroup><col style="width:20%"><col style="width:30%"><col style="width:20%"><col style="width:30%"></colgroup>';
+  h+='<tr><td class="lb">Ship&#39;s name</td><td style="font-weight:700">'+(rec.vessel||'')+'</td><td class="lb">Ship&#39;s registry</td><td>'+(rec.registry||'')+'</td></tr>';
+  h+='<tr><td class="lb">Owner/Operator</td><td>'+(rec.owner||'')+'</td><td class="lb">GRT(Int&#39;l)</td><td>'+(rec.grt||'')+'</td></tr>';
+  h+='<tr><td class="lb">Local agency</td><td>'+(rec.agency||'')+'</td><td class="lb">Max. draft</td><td>'+(maxDraft?maxDraft+' m':'')+'</td></tr>';
+  h+='<tr><td class="lb" rowspan="2" style="vertical-align:middle">Where piloted</td><td colspan="3"><b>From</b> &nbsp;|&nbsp; '+fromVal+'</td></tr>';
+  h+='<tr><td colspan="3"><b>To</b> &nbsp;|&nbsp; '+toVal+'</td></tr>';
+  h+='<tr><td class="lb">When piloted</td>';
+  h+='<td><div style="font-size:8pt">Ordered</div>'+ordTime+'</td>';
+  h+='<td><div style="font-size:8pt">Commenced</div>'+comTime+'</td>';
+  h+='<td><div style="font-size:8pt">Completed</div>'+doneTime+'</td></tr>';
+  h+='<tr><td class="lb">Main Pilot</td><td>'+mainPilot+'</td><td class="lb">Co Pilot</td><td>'+coPilot+'</td></tr>';
+  h+='</table>';
+  h+='<div style="border:1px solid #555;padding:4px 6px;font-size:10.5pt;margin-bottom:4px;word-break:break-word;overflow-wrap:break-word;white-space:normal">';
+  h+='<b style="text-decoration:underline">Surcharges:</b><br>'+sc+'</div>';
+  h+='<div style="text-align:right;font-size:8pt;font-style:italic;margin-bottom:4px">Pilotage Plan acknowledged by master.</div>';
+  h+='<table><colgroup><col style="width:50%"><col style="width:50%"></colgroup>';
+  // Remarks 항목 수집
+  var rmItems=[
+    {id:'rm-fl',label:'First line',tid:'rm-fl-t'},
+    {id:'rm-ll',label:'Last line',tid:'rm-ll-t'},
+    {id:'rm-da',label:'Dropped anchor',tid:'rm-da-t'},
+    {id:'rm-aa',label:'Anchor aweigh',tid:'rm-aa-t'},
+    {id:'rm-mo',label:'Moored',tid:'rm-mo-t'},
+    {id:'rm-um',label:'Unmoored',tid:'rm-um-t'}
+  ];
+  var rmHtml='';
+  for(var ri=0;ri<rmItems.length;ri++){
+    var checked=gc(rmItems[ri].id);
+    var tval=gv(rmItems[ri].tid);
+    rmHtml+='<div style="font-size:8pt;margin-bottom:3px">'
+      +(checked?'<b>[&#10003;]</b>':'[ ]')
+      +' '+rmItems[ri].label
+      +(tval?' &nbsp;<b>'+tval+'</b> hrs':'')
+      +'</div>';
+  }
+  h+='<tr><td class="lb rem-td" style="vertical-align:top">Remarks<br><div style="font-weight:400;margin-top:4px">'+rmHtml+'</div></td>';
+  h+='<td class="sig-td">';
+  if(masterSigImg) h+='<img src="'+masterSigImg+'">';
+  h+='<div class="ml">Master</div></td></tr></table>';
+  h+='<p>This is to certify that the pilotage service has been fulfilled as above-stated and I acknowledge the pilotage clauses shown on the back.</p></div>';
+  // ── Boat Service No.1 (데이터 있을 때만) ──
+  h+='<div class="dv">- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</div>';
+  h+='<div class="cert"><h2>CERTIFICATE OF BOAT SERVICE</h2>';
+  h+='<div style="text-align:center;font-size:10pt;font-weight:700;margin-bottom:3px">&#xC720;&#xD55C;&#xD68C;&#xC0AC;&#xC120;&#xC9C4;&#xD574;&#xC6B4;</div>';
+  h+='<div style="text-align:right;font-size:9pt;margin-bottom:5px">DATE : '+dateStr+'</div>';
+  h+='<table><colgroup><col style="width:20%"><col style="width:30%"><col style="width:20%"><col style="width:30%"></colgroup>';
+  h+='<tr><td class="lb">Ship&#39;s name</td><td style="font-weight:700">'+(rec.vessel||'')+'</td><td class="lb">Ship&#39;s registry</td><td>'+(rec.registry||'')+'</td></tr>';
+  h+='<tr><td class="lb">Owner/Operator</td><td>'+(rec.owner||'')+'</td><td class="lb">Agency</td><td>'+(rec.agency||'')+'</td></tr>';
+  h+='<tr><td></td><td class="lb" style="text-align:center">Embarkation</td><td class="lb" style="text-align:center" colspan="2">Disembarkation</td></tr>';
+  h+='<tr><td class="lb">Where engaged</td>';
+  h+='<td>DS-'+bembBerth+'-DS(SJ '+bembsj+')</td>';
+  h+='<td colspan="2">DS-'+bdisBerth+'-DS(SJ '+bdissj+')</td></tr>';
+  h+='<tr><td class="lb">When engaged</td>';
+  h+='<td>'+(bet1||'__:__')+' ~ '+(bet2||'__:__')+'</td>';
+  h+='<td colspan="2">'+(bdt1||'__:__')+' ~ '+(bdt2||'__:__')+'</td></tr>';
+  h+='<tr>';
+  h+='<td style="font-size:8pt">'+(bsat?'[v]':'[ ]')+' Sat/Sun/Holiday</td>';
+  h+='<td style="font-size:8pt">'+(ben?'[v]':'[ ]')+' Night &nbsp;'+(beg?'[v]':'[ ]')+' Guide Boat</td>';
+  h+='<td style="font-size:8pt">'+(bdn?'[v]':'[ ]')+' Night</td>';
+  h+='<td style="font-size:8pt">'+(bdg?'[v]':'[ ]')+' Guide boat</td></tr>';
+  h+='</table>';
+  h+='<table style="margin-top:4px"><colgroup><col style="width:50%"><col style="width:50%"></colgroup>';
+  h+='<tr><td class="lb rem-td" style="vertical-align:top;white-space:pre-wrap">Remarks<br><span style="font-weight:400">'+bsRemarks+'</span></td>';
+  h+='<td class="sig-td">';
+  if(boatSigImg) h+='<img src="'+boatSigImg+'">';
+  h+='<div class="ml">Master</div></td></tr></table>';
+  h+='<p>This is to certify that the transportation service has been provided for the pilotage of above-stated ship.</p></div>';
+
+  // ── 증서2 (Where piloted만 다름) ──
+  var fromVal2='', toVal2='';
+  if(op==='ARRIVAL'){ fromVal2=rec.fromPS2||''; toVal2=rec.toPS2||''; }
+  else if(op==='DEPARTURE'){ fromVal2=rec.toPS2||''; toVal2=rec.fromPS2||''; }
+  else if(op==='SHIFT'){ fromVal2=rec.shiftFrom2||''; toVal2=rec.shiftTo2||''; }
+
+  if(fromVal2||toVal2){
+    var ord2=gv('c2-ord'), com2=gv('c2-com'), done2=gv('c2-done');
+    var mp2=gv('c2-mpilot')||mainPilot, cp2=gv('c2-cpilot')||coPilot;
+    var masterSig2=getSigImg('cv-cert-master2');
+    var rm2Items=[
+      {id:'rm2-fl',label:'First line',tid:'rm2-fl-t'},
+      {id:'rm2-ll',label:'Last line',tid:'rm2-ll-t'},
+      {id:'rm2-da',label:'Dropped anchor',tid:'rm2-da-t'},
+      {id:'rm2-aa',label:'Anchor aweigh',tid:'rm2-aa-t'},
+      {id:'rm2-mo',label:'Moored',tid:'rm2-mo-t'},
+      {id:'rm2-um',label:'Unmoored',tid:'rm2-um-t'}
+    ];
+    var rmHtml2='';
+    for(var ri2=0;ri2<rm2Items.length;ri2++){
+      var ck2=gc(rm2Items[ri2].id), tv2=gv(rm2Items[ri2].tid);
+      rmHtml2+='<div style="font-size:8pt;margin-bottom:3px">'+(ck2?'<b>[&#10003;]</b>':'[ ]')+' '+rm2Items[ri2].label+(tv2?' &nbsp;<b>'+tv2+'</b> hrs':'')+'</div>';
+    }
+    h+='<div class="dv">- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</div>';
+    h+='<div class="cert"><h2>CERTIFICATE OF PILOTAGE</h2>';
+    h+='<div style="text-align:right;font-size:9pt;margin-bottom:5px">DATE : '+dateStr+'</div>';
+    h+='<table><colgroup><col style="width:20%"><col style="width:30%"><col style="width:20%"><col style="width:30%"></colgroup>';
+    h+='<tr><td class="lb">Ship\'s name</td><td style="font-weight:700">'+(rec.vessel||'')+'</td><td class="lb">Ship\'s registry</td><td>'+(rec.registry||'')+'</td></tr>';
+    h+='<tr><td class="lb">Owner/Operator</td><td>'+(rec.owner||'')+'</td><td class="lb">GRT(Int\'l)</td><td>'+(rec.grt||'')+'</td></tr>';
+    h+='<tr><td class="lb">Local agency</td><td>'+(rec.agency||'')+'</td><td class="lb">Max. draft</td><td>'+(gv('c2-draft')?gv('c2-draft')+' m':'')+'</td></tr>';
+    h+='<tr><td class="lb" rowspan="2" style="vertical-align:middle">Where piloted</td><td colspan="3"><b>From</b> &nbsp;|&nbsp; '+fromVal2+'</td></tr>';
+    h+='<tr><td colspan="3"><b>To</b> &nbsp;|&nbsp; '+toVal2+'</td></tr>';
+    h+='<tr><td class="lb">When piloted</td>';
+    h+='<td><div style="font-size:8pt">Ordered</div>'+ord2+'</td>';
+    h+='<td><div style="font-size:8pt">Commenced</div>'+com2+'</td>';
+    h+='<td><div style="font-size:8pt">Completed</div>'+done2+'</td></tr>';
+    h+='<tr><td class="lb">Main Pilot</td><td>'+mp2+'</td><td class="lb">Co Pilot</td><td>'+cp2+'</td></tr>';
+    h+='</table>';
+    // 증서2 Surcharges
+    function gc2(id){ var el=document.getElementById(id); return el&&el.checked; }
+    var sc2='';
+    sc2+='<br>';
+    if(gc2('sc2-dg')) sc2+='[v] DG CGO Ship<br>'; else sc2+='[ ] DG CGO Ship<br>';
+    if(gc2('sc2-ni')) sc2+='[v] Night<br>'; else sc2+='[ ] Night<br>';
+    if(gc2('sc2-sa')) sc2+='[v] Sat/Sun/Holiday<br>'; else sc2+='[ ] Sat/Sun/Holiday<br>';
+    if(gc2('sc2-ca')) sc2+='[v] Cancel<br>'; else sc2+='[ ] Cancel<br>';
+    var fl2dk=gc2('sc2-fl-dk'), fl2an=gc2('sc2-fl-an');
+    if(fl2dk||fl2an){ var fl2txt='Flooding tide ('+(fl2dk&&fl2an?'Docking+Anchoring':fl2dk?'Docking':'Anchoring')+')'; sc2+='[v] '+fl2txt+'<br>'; } else sc2+='[ ] Flooding tide<br>';
+    if(gc2('sc2-wa')) sc2+='[v] Waiting ('+(gv('sc2-hrs')||'__')+' hrs)<br>'; else sc2+='[ ] Waiting (__hrs)<br>';
+    if(gc2('sc2-sh')) sc2+='[v] Short notice<br>'; else sc2+='[ ] Short notice<br>';
+    if(gc2('sc2-ss')) sc2+='[v] Slow Speed<br>'; else sc2+='[ ] Slow Speed<br>';
+    if(gc2('sc2-ov')) sc2+='[v] Oversize<br>'; else sc2+='[ ] Oversize<br>';
+    if(gc2('sc2-sp')) sc2+='[v] Special<br>'; else sc2+='[ ] Special<br>';
+    if(gc2('sc2-ot')) sc2+='[v] Other: '+gv('sc2-ot-txt')+'<br>'; else sc2+='[ ] Other: <br>';
+    h+='<div style="border:1px solid #555;padding:4px 6px;font-size:10.5pt;margin-bottom:4px;word-break:break-word;overflow-wrap:break-word;white-space:normal"><b style="text-decoration:underline">Surcharges:</b><br>'+sc2+'</div>';
+    h+='<div style="text-align:right;font-size:8pt;font-style:italic;margin-bottom:4px">Pilotage Plan acknowledged by master.</div>';
+    h+='<table><colgroup><col style="width:50%"><col style="width:50%"></colgroup>';
+    h+='<tr><td class="lb rem-td" style="vertical-align:top">Remarks<br><div style="font-weight:400;margin-top:4px">'+rmHtml2+'</div></td>';
+    h+='<td class="sig-td">';
+    if(masterSig2) h+='<img src="'+masterSig2+'">';
+    h+='<div class="ml">Master</div></td></tr></table>';
+    h+='<p>This is to certify that the pilotage service has been fulfilled as above-stated and I acknowledge the pilotage clauses shown on the back.</p></div>';
+  }
+
+  // ── Boat Service No.2 ──
+  var bs2from=gt('bs2-emb').trim(), bs2to=gt('bs2-dis').trim();
+  var bs2et1=gv('bs2-et1'),bs2et2=gv('bs2-et2'),bs2dt1=gv('bs2-dt1'),bs2dt2=gv('bs2-dt2');
+  var bs2embsj=gv('bs2-emb-sj'),bs2dissj=gv('bs2-dis-sj');
+  var bs2sat=gc('bs2-sat'),bs2en=gc('bs2-en'),bs2eg=gc('bs2-eg'),bs2dn=gc('bs2-dn'),bs2dg=gc('bs2-dg');
+  var bs2remarks=gv('bs2-remarks');
+  var boat2SigImg=getSigImg('cv-cert-boat2');
+  h+='<div class="dv">- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</div>';
+  h+='<div class="cert"><h2>CERTIFICATE OF BOAT SERVICE</h2>';
+    h+='<div style="text-align:center;font-size:10pt;font-weight:700;margin-bottom:3px">&#xC720;&#xD55C;&#xD68C;&#xC0AC;&#xC120;&#xC9C4;&#xD574;&#xC6B4;</div>';
+    h+='<div style="text-align:right;font-size:9pt;margin-bottom:5px">DATE : '+dateStr+'</div>';
+    h+='<table><colgroup><col style="width:20%"><col style="width:30%"><col style="width:20%"><col style="width:30%"></colgroup>';
+    h+='<tr><td class="lb">Ship\'s name</td><td style="font-weight:700">'+(rec.vessel||'')+'</td><td class="lb">Ship\'s registry</td><td>'+(rec.registry||'')+'</td></tr>';
+    h+='<tr><td class="lb">Owner/Operator</td><td>'+(rec.owner||'')+'</td><td class="lb">Agency</td><td>'+(rec.agency||'')+'</td></tr>';
+    h+='<tr><td></td><td class="lb" style="text-align:center">Embarkation</td><td class="lb" style="text-align:center" colspan="2">Disembarkation</td></tr>';
+    h+='<tr><td class="lb">Where engaged</td><td>DS-'+bs2from+'-DS(SJ '+bs2embsj+')</td><td colspan="2">DS-'+bs2to+'-DS(SJ '+bs2dissj+')</td></tr>';
+    h+='<tr><td class="lb">When engaged</td><td>'+(bs2et1||'__:__')+' ~ '+(bs2et2||'__:__')+'</td><td colspan="2">'+(bs2dt1||'__:__')+' ~ '+(bs2dt2||'__:__')+'</td></tr>';
+    h+='<tr><td style="font-size:8pt">'+(bs2sat?'[v]':'[ ]')+' Sat/Sun/Holiday</td>';
+    h+='<td style="font-size:8pt">'+(bs2en?'[v]':'[ ]')+' Night &nbsp;'+(bs2eg?'[v]':'[ ]')+' Guide Boat</td>';
+    h+='<td style="font-size:8pt">'+(bs2dn?'[v]':'[ ]')+' Night</td><td style="font-size:8pt">'+(bs2dg?'[v]':'[ ]')+' Guide boat</td></tr>';
+    h+='</table>';
+    h+='<table style="margin-top:4px"><colgroup><col style="width:50%"><col style="width:50%"></colgroup>';
+    h+='<tr><td class="lb rem-td" style="vertical-align:top;white-space:pre-wrap">Remarks<br><span style="font-weight:400">'+bs2remarks+'</span></td>';
+    h+='<td class="sig-td">'; if(boat2SigImg) h+='<img src="'+boat2SigImg+'">';
+    h+='<div class="ml">Master</div></td></tr></table>';
+    h+='<p>This is to certify that the transportation service has been provided for the pilotage of above-stated ship.</p></div>';
+
+  h+='</body></html>';
+
+  showToast('📨 전송 중...');
+  fetch('https://mpx-server-production.up.railway.app/api/sendmail', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      subject: '[MPX] ' + (rec.vessel||'') + ' ' + (rec.date||'') + ' ' + (rec.op||''),
+      html: h,
+      filename: fname
+    })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if(d.result==='success'){
+      showToast('✅ dscontrol08@naver.com 으로 전송 완료!');
+    } else {
+      showToast('❌ 전송 실패: '+(d.error||'오류'));
+    }
+  })
+  .catch(function(e){
+    showToast('❌ 전송 오류: '+e.message);
+  });
+}
+
+
+
+function viewFullRecord(){
+  var rec=null;
+  for(var i=0;i<recs.length;i++){ if(recs[i].id===viewId){ rec=recs[i]; break; } }
+  if(!rec) return;
+  var p=PD[rec.port]||{};
+  document.getElementById('full-port').textContent=p.en||rec.port;
+
+  var CL_ALL=[].concat(CL_SHIP,CL_EQUIP);
+  var allKeys=[];
+  var prefixes=['sh','eq','fn'];
+  var lens=[CL_SHIP.length,CL_EQUIP.length];
+  for(var pi=0;pi<prefixes.length;pi++){
+    for(var ci=0;ci<lens[pi];ci++) allKeys.push(prefixes[pi]+'-'+ci);
+  }
+
+  var h='';
+
+  // Lock banner
+  h+='<div style="background:#fff5f5;border:2px solid #e53e3e;border-radius:10px;padding:12px 14px">';
+  h+='<div style="font-size:11px;color:#991b1b;font-weight:700;margin-bottom:2px">&#128274; 저장 시각: '+new Date(rec.savedAt).toLocaleString('ko-KR')+'</div>';
+  h+='<div style="font-size:11px;color:#4b5563">수정 불가 &mdash; 증거자료로 활용 가능</div></div>';
+
+  // Vessel info
+  h+='<div style="background:#fff;border:1.5px solid #c0d4eb;border-radius:12px;overflow:hidden">';
+  h+='<div style="background:#dce8f5;padding:10px 14px;font-size:13px;font-weight:700;color:#1a3a6b">&#128674; 선박 정보</div>';
+  h+='<div style="padding:12px 14px">';
+  var vrows=[['날짜',rec.date],['시간 (POB)',rec.time],['작업',rec.op],['항구',(PD[rec.port]||{}).name||rec.port],['부두',rec.berth||'-'],['출발PS',rec.fromPS||'-'],['목적PS',rec.toPS||'-'],['선박명',rec.vessel],['Owner/Op',rec.owner||'-'],['Agency',rec.agency||'-'],['선적국',rec.flag||'-'],['선적항',rec.registry||'-'],['Call Sign',rec.callsign||'-'],['선종',rec.shipType||'-'],['LOA',(rec.loa||'-')+'m'],['Beam',(rec.beam||'-')+'m'],['Fwd Draft',(rec.draftF||'-')+'m'],['Aft Draft',(rec.draftA||'-')+'m'],['DWT',(rec.dwt||'-')+'MT'],['GRT',rec.grt||'-'],['추진',rec.prop||'-'],['회전',rec.rot||'-'],['Bow Thr',(rec.bow||'-')+'kW'],['앵커',rec.anchor||'-']];
+  for(var i=0;i<vrows.length;i++){
+    h+='<div style="display:flex;gap:8px;font-size:13px;padding:4px 0;border-bottom:1px solid #f0f4f8">';
+    h+='<span style="color:#4b5563;min-width:90px;font-size:12px">'+vrows[i][0]+'</span>';
+    h+='<span style="font-weight:600;color:#111827">'+vrows[i][1]+'</span></div>';
+  }
+  h+='</div></div>';
+
+  // Pilot info
+  h+='<div style="background:#fff;border:1.5px solid #c0d4eb;border-radius:12px;overflow:hidden">';
+  h+='<div style="background:#dce8f5;padding:10px 14px;font-size:13px;font-weight:700;color:#1a3a6b">&#128100; 도선 정보</div>';
+  h+='<div style="padding:12px 14px">';
+  var prows=[['Main Pilot',rec.pilot||'-'],['등급',rec.pgrade||'-'],['Co Pilot',rec.copilot||'-'],['Co등급',rec.cgrade||'-'],['선장',rec.master||'-'],['VHF Main',rec.vhf||'-'],['Working',rec.wvhf||'-'],['접안방향',rec.berthSide||'-']];
+  for(var i=0;i<prows.length;i++){
+    h+='<div style="display:flex;gap:8px;font-size:13px;padding:4px 0;border-bottom:1px solid #f0f4f8">';
+    h+='<span style="color:#4b5563;min-width:90px;font-size:12px">'+prows[i][0]+'</span>';
+    h+='<span style="font-weight:600;color:#111827">'+prows[i][1]+'</span></div>';
+  }
+  h+='</div></div>';
+
+  // Checklist
+  h+='<div style="background:#fff;border:1.5px solid #c0d4eb;border-radius:12px;overflow:hidden">';
+  h+='<div style="background:#dce8f5;padding:10px 14px;font-size:13px;font-weight:700;color:#1a3a6b">&#9989; 체크리스트</div>';
+  h+='<div style="padding:12px 14px">';
+  var sections=[{title:'선박 준비사항',items:CL_SHIP,prefix:'sh'},{title:'장비 설정',items:CL_EQUIP,prefix:'eq'}];
+  for(var si=0;si<sections.length;si++){
+    h+='<div style="font-size:12px;font-weight:700;color:#1a3a6b;margin:8px 0 4px">'+sections[si].title+'</div>';
+    for(var ci=0;ci<sections[si].items.length;ci++){
+      var key=sections[si].prefix+'-'+ci;
+      var st=(rec.chk||{})[key];
+      var icon=st==='checked'?'<span style="color:#166634;font-weight:700">&#10003;</span>':st==='na'?'<span style="color:#991b1b;font-size:11px;font-weight:700">N/A</span>':'<span style="color:#9ca3af">&#9633;</span>';
+      var txtStyle=st==='checked'?'color:#9ca3af;text-decoration:line-through':'color:#111827';
+      h+='<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid #f0f4f8;align-items:flex-start">';
+      h+='<div style="min-width:22px;text-align:center;margin-top:1px">'+icon+'</div>';
+      h+='<div style="font-size:12px;'+txtStyle+'">'+sections[si].items[ci]+'</div></div>';
+    }
+  }
+  h+='</div></div>';
+
+  // Signature
+  if(rec.masterSig){
+    h+='<div style="background:#fff;border:1.5px solid #c0d4eb;border-radius:12px;overflow:hidden">';
+    h+='<div style="background:#dce8f5;padding:10px 14px;font-size:13px;font-weight:700;color:#1a3a6b">&#9997;&#65039; 선장 서명</div>';
+    h+='<div style="padding:12px 14px"><img src="'+rec.masterSig+'" style="width:100%;max-width:320px;border-radius:8px;border:1px solid #c0d4eb"/></div></div>';
+  }
+
+  document.getElementById('full-content').innerHTML=h;
+  showScreen('screen-full');
+}
+
+var allInps=document.querySelectorAll('input:not([type=checkbox]),select,textarea');
+for(var ai=0;ai<allInps.length;ai++){
+  allInps[ai].addEventListener('input', updateProg);
+  allInps[ai].addEventListener('change', updateProg);
+}
+renderRecs();
+
+/* ════════════════════════════════════════
+   도선예보 연동
+   ════════════════════════════════════════ */
+var _fcData   = [];   // API 전체 데이터
+var _fcTab    = 'ALL';
+var _fcSel    = null; // 모달에서 선택된 항목
+
+/* 도선사 코드 → f-pilot select 옵션값 매핑 */
+var PILOT_MAP = {
+  'KG':'I.G. KANG / KG (강일권)',  'JK':'J.K. JUNG / JK (정준권)',
+  'ST':'T.C. SON / ST (손태창)',   'PG':'G.J. PARK / PG (박근주)',
+  'MC':'M.C. AN / MC (안문철)',    'GB':'M.B. GO / GB (고민보)',
+  'GM':'M.S. GIM / GM (김미수)',   'LE':'S.E. LEE / LE (이성언)',
+  'GH':'G.H. KIM / GH (김곤한)',   'KW':'K.W. CHIN / KW (진기원)',
+  'MY':'M.Y. KWON / MY (권민용)',  'LK':'S.H. LIM / LK (임수훈)',
+  'KY':'K.Y. LIM / KY (임광룡)',   'JY':'J.Y. GU / JY (구진용)',
+  'KS':'S.H. KIM / KS (김승한)',   'PK':'K.H. PARK / PK (박기홍)',
+  'YM':'Y.M. KIM / YM (김영면)',   'TW':'T.W. HONG / TW (홍태원)',
+  'LH':'S.H. LEE / LH (이승화)',   'JO':'J.O. PARK / JO (박지욱)',
+  'OC':'C.U. OH / OC (오창욱)',    'LT':'T.K. LEE / LT (이태권)'
+};
+
+/* 상태 → 배지 클래스 */
+function _fcBadge(s){
+  var v=(s||'').trim();
+  if(v==='예보') return 's0';
+  if(v==='도선') return 's1';
+  if(v==='완료') return 's2';
+  if(v==='취소') return 's3';
+  return 's9';
+}
+
+/* 출발지/도착지 코드로 작업구분 추정 */
+function _fcOp(ps, pe){
+  ps=(ps||'').toUpperCase(); pe=(pe||'').toUpperCase();
+  /* WAA-xx / A-xx 는 Anchorage(정박지) → Berth로 분류하여 SHIFT 판단에 포함 */
+  var B=['MB','MDA','MDB','MDK','MDH','MDS','MDT','SPM','WAQ','WAA','KNOC','SINSE','B.A'];
+  function isBerth(c){
+    if(/^A-\d+$/.test(c)) return true;
+    for(var i=0;i<B.length;i++){ if(c.indexOf(B[i])>=0) return true; }
+    return false;
+  }
+  if(isBerth(pe)&&!isBerth(ps)) return {cls:'arr', lbl:'입항', val:'ARRIVAL'};
+  if(isBerth(ps)&&!isBerth(pe)) return {cls:'dep', lbl:'출항', val:'DEPARTURE'};
+  if(isBerth(ps)&&isBerth(pe))  return {cls:'sft', lbl:'이동',  val:'SHIFT'};
+  return {cls:'arr', lbl:'입항', val:'ARRIVAL'};
+}
+
+/* 출발지/도착지 코드로 항구 키 추정 */
+function _fcPort(ps, pe){
+  var c=((ps||'')+' '+(pe||'')).toUpperCase();
+  if(c.indexOf('MDT-6')>=0||c.indexOf('PS4')>=0) return 'dangjin';
+  if(c.indexOf('MDT-5')>=0) return 'taean';
+  if(c.indexOf('MDA')>=0||c.indexOf('MDB')>=0||c.indexOf('SINSE')>=0||c.indexOf('B.A')>=0) return 'boryeong';
+  if(c.indexOf('MB')>=0||c.indexOf('MDK')>=0||c.indexOf('MDH')>=0||c.indexOf('MDS')>=0||c.indexOf('SPM')>=0||c.indexOf('KNOC')>=0) return 'daesan';
+  return 'daesan';
+}
+
+/* 현재 탭 기준 정렬된 목록 반환 */
+function _fcItems(){
+  var items=_fcData;
+  if(_fcTab!=='ALL') items=items.filter(function(d){ return (d.DT_SHIP||'').substring(0,10)===_fcTab; });
+  return items.slice().sort(function(a,b){
+    var x=(a.DT_SHIP||'')+' '+(a.TM_SHIP||'');
+    var y=(b.DT_SHIP||'')+' '+(b.TM_SHIP||'');
+    return x<y?-1:x>y?1:0;
+  });
+}
+
+/* API 호출 */
+var _fcSelDate='';
+
+function _fcInitDate(){
+  if(_fcSelDate) return;
+  var n=new Date();
+  _fcSelDate=n.getFullYear()+'-'+pad(n.getMonth()+1)+'-'+pad(n.getDate());
+  var el=document.getElementById('fc-date-label');
+  if(el) el.textContent=_fcSelDate.replace(/-/g,'.');
+}
+
+function fcDateShift(d){
+  _fcInitDate();
+  var dt=new Date(_fcSelDate);
+  dt.setDate(dt.getDate()+d);
+  _fcSelDate=dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate());
+  var el=document.getElementById('fc-date-label');
+  if(el) el.textContent=_fcSelDate.replace(/-/g,'.');
+  loadForecast();
+}
+
+
+function loadForecast(){
+  _fcInitDate();
+  var btn=document.getElementById('fc-refresh-btn');
+  if(btn){ btn.textContent='⏳...'; btn.disabled=true; }
+  document.getElementById('fc-loading').style.display='block';
+  document.getElementById('fc-list').innerHTML='';
+  document.getElementById('fc-tabs').style.display='none';
+
+  fetch('https://mpx-server-production.up.railway.app/api/schedule?date='+_fcSelDate)
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(data){
+      _fcData=Array.isArray(data)?data:(data.data||data.list||data.result||[]);
+      document.getElementById('fc-loading').style.display='none';
+      _fcTab='ALL';
+      _fcRenderTabs();
+      _fcRenderList();
+      if(btn){ btn.textContent='↻'; btn.disabled=false; }
+    })
+    .catch(function(e){
+      document.getElementById('fc-loading').style.display='none';
+      document.getElementById('fc-list').innerHTML=
+        '<div class="fc-err">&#9888; 예보 불러오기 실패<br>'
+        +'<span style="font-weight:500">'+e.message+'</span><br>'
+        +'<span style="font-size:11px;color:#555">&#128161; Chrome flags 설정 확인:<br>'
+        +'chrome://flags → insecure 검색 →<br>'
+        +'http://www.ds-pilot.co.kr 입력 후 사용</span></div>';
+      if(btn){ btn.textContent='↻'; btn.disabled=false; }
+    });
+}
+
+/* 날짜 탭 렌더 */
+function _fcRenderTabs(){
+  var dates={}, today=nowDate();
+  for(var i=0;i<_fcData.length;i++){
+    var d=(_fcData[i].DT_SHIP||'').substring(0,10);
+    if(d) dates[d]=true;
+  }
+  var arr=Object.keys(dates).sort();
+  var el=document.getElementById('fc-tabs');
+  if(!arr.length){ el.style.display='none'; return; }
+  el.style.display='flex';
+  var h='<button class="fc-tab'+(_fcTab==='ALL'?' active':'')+'" onclick="setFcTab(\'ALL\')">전체</button>';
+  for(var i=0;i<arr.length;i++){
+    var d=arr[i], lbl=(d===today?'오늘('+d.substring(5)+')':d.substring(5));
+    h+='<button class="fc-tab'+(_fcTab===d?' active':'')+'" onclick="setFcTab(\''+d+'\')">'+lbl+'</button>';
+  }
+  el.innerHTML=h;
+}
+function setFcTab(t){ _fcTab=t; _fcRenderTabs(); _fcRenderList(); }
+
+/* 목록 렌더 */
+function _fcRenderList(){
+  var el=document.getElementById('fc-list');
+  var items=_fcItems();
+  if(!items.length){ el.innerHTML='<div class="fc-empty">표시할 예보가 없습니다</div>'; return; }
+  var today=nowDate(), h='';
+  for(var i=0;i<items.length;i++){
+    var d=items[i];
+    var vessel=(d.NM_CALLSIGN||'').trim()||'(선박명 없음)';
+    var tm=(d.TM_SHIP||'--:--').substring(0,5);
+    var dt=(d.DT_SHIP||'').substring(0,10);
+    var st=(d.FG_STATUS||'').trim();
+    var pilot=(d.CD_PILOT||'').trim();
+    var ps=(d.CD_POINTS||'').trim(), pe=(d.CD_POINTE||'').trim();
+    var owner=(d.NM_SHIPOWNER||'').trim();
+    var agent=(d.SN_PARTNER||'').trim();
+    var ton=(d.NUM_TON||'').trim();
+    var op=_fcOp(ps,pe);
+    var dtLbl=(_fcTab==='ALL'?(dt===today?'오늘 ':dt.substring(5)+' '):'');
+    var stCls=(st==='완료'?'st-done':st==='취소'?'st-cancel':'');
+    h+='<div class="fc-item '+stCls+'" onclick="openFcModal('+i+')">';
+    h+='<div class="fc-top"><div class="fc-vessel">'+vessel+'</div>';
+    h+='<div class="fc-badge '+_fcBadge(st)+'">'+st+'</div></div>';
+    h+='<div class="fc-meta"><span class="fc-time">'+dtLbl+tm+'</span>';
+    h+='<span class="fc-op '+op.cls+'">'+op.lbl+'</span>';
+    if(pilot) h+='<span>&#128100; '+pilot+'</span>';
+    if(ps||pe) h+='<span>'+(ps||'-')+' → '+(pe||'-')+'</span>';
+    h+='</div>';
+    var sub=[];
+    if(ton)   sub.push(ton+'톤');
+    if(owner) sub.push(owner);
+    if(agent) sub.push(agent);
+    if(sub.length) h+='<div class="fc-sub">'+sub.join(' · ')+'</div>';
+    h+='<div class="fc-hint">탭하여 MPX 작성 ▶</div>';
+    h+='</div>';
+  }
+  el.innerHTML=h;
+}
+
+/* 모달 열기 */
+function openFcModal(idx){
+  var items=_fcItems();
+  _fcSel=items[idx];
+  if(!_fcSel) return;
+  var d=_fcSel;
+  var op=_fcOp((d.CD_POINTS||''),(d.CD_POINTE||''));
+  var pilot=(d.CD_PILOT||'').trim();
+  var pilotName=PILOT_MAP[pilot]||pilot||'-';
+  document.getElementById('fc-modal-vessel').textContent=(d.NM_CALLSIGN||'(선박명 없음)').trim();
+  var rows=[
+    ['날짜', (d.DT_SHIP||'').substring(0,10)],
+    ['시간 (POB)', (d.TM_SHIP||'').substring(0,5)],
+    ['작업', op.lbl],
+    ['출발 → 도착', (d.CD_POINTS||'-')+' → '+(d.CD_POINTE||'-')],
+    ['도선사', pilotName],
+    ['선사', (d.NM_SHIPOWNER||'').trim()||'-'],
+    ['대리점', (d.SN_PARTNER||'').trim()||'-'],
+    ['톤수', (d.NUM_TON||'').trim()||'-'],
+    ['비고', (d.NM_TEXT_FORECAST||'').trim()||'-']
+  ];
+  var h='';
+  for(var i=0;i<rows.length;i++){
+    h+='<div class="fc-modal-row"><span class="lbl">'+rows[i][0]+'</span><span class="val">'+rows[i][1]+'</span></div>';
+  }
+  document.getElementById('fc-modal-rows').innerHTML=h;
+  document.getElementById('fc-modal-bg').classList.add('show');
+}
+function closeFcModal(){ document.getElementById('fc-modal-bg').classList.remove('show'); _fcSel=null; }
+
+/* 폼 자동 완성 후 MPX 화면으로 이동 */
+function applyForecast(){
+  var d=_fcSel;
+  if(!d){ closeFcModal(); return; }
+  var ps=(d.CD_POINTS||'').trim(), pe=(d.CD_POINTE||'').trim();
+  var op=_fcOp(ps,pe);
+  var port=_fcPort(ps,pe);
+
+  /* 1. 항구 선택 & 폼 초기화 */
+  selectPort(port);
+
+  /* 2. 날짜·시간 - selectPort 초기화 후 덮어쓰기 위해 setTimeout 사용 */
+  var dt=(d.DT_SHIP||'').substring(0,10).replace(/\//g,'-');
+  var tm=(d.TM_SHIP||'').substring(0,5);
+  setTimeout(function(){
+    if(dt){ document.getElementById('f-date').value=dt; autoCheckHoliday(); autoCheckNight(); }
+    if(tm){
+      document.getElementById('f-time').value=tm; autoCheckNight();
+      var ord=document.getElementById('c-ord');
+      if(ord && !ord.value) ord.value=tm;
+      var ord2=document.getElementById('c2-ord');
+      if(ord2 && !ord2.value) ord2.value=tm;
+    }
+  }, 100);
+
+  /* 3. 작업구분 */
+  var rgs=document.querySelectorAll('#rg-op .rbtn');
+  for(var i=0;i<rgs.length;i++) rgs[i].classList.toggle('active', rgs[i].getAttribute('data-val')===op.val);
+  updateBerths(); updateProg();
+
+  /* 4. 선박명 */
+  var vessel=(d.NM_CALLSIGN||'').trim();
+  if(vessel) document.getElementById('f-vessel').value=vessel;
+
+  /* 5. 도선사 */
+  var code=(d.CD_PILOT||'').trim();
+  var fullName=PILOT_MAP[code]||'';
+  if(fullName){
+    var psel=document.getElementById('f-pilot');
+    for(var j=0;j<psel.options.length;j++){
+      if(psel.options[j].text===fullName||psel.options[j].value===fullName){
+        psel.value=psel.options[j].value; break;
+      }
+    }
+    syncCertPilot();
+  }
+
+  /* 6. 대리점 → 직접 텍스트 입력 */
+  var agent=(d.SN_PARTNER||'').trim();
+  if(agent){
+    var ac=document.getElementById('f-agency-c');
+    if(ac) ac.value=agent;
+    if(typeof syncOA==='function') syncOA();
+  }
+
+  /* 7. 선사(Owner) → 직접 텍스트 입력 */
+  var ownerVal=(d.NM_SHIPOWNER||'').trim();
+  if(ownerVal){
+    var oc=document.getElementById('f-owner-c');
+    if(oc) oc.value=ownerVal;
+    if(typeof syncOA==='function') syncOA();
+  }
+
+  /* 8. 톤수 → GRT 필드에 입력 (NUM_TON이 GT 기준) */
+  var ton=(d.NUM_TON||'').trim();
+  if(ton){
+    var tonNum=Math.round(parseFloat(ton));
+    if(!isNaN(tonNum)){
+      var grtEl=document.getElementById('f-grt');
+      if(grtEl && !grtEl.value) grtEl.value=tonNum;
+    }
+  }
+
+  /* 9. From / To / Berth 자동입력 */
+  /* updateBerths()가 이미 호출됐으므로 select 옵션이 채워진 상태 */
+  /* 짧은 딜레이 후 설정 (DOM 렌더링 완료 대기) */
+  setTimeout(function(){
+    var psCode=(d.CD_POINTS||'').trim();  // 출발지 코드
+    var peCode=(d.CD_POINTE||'').trim();  // 도착지 코드
+    var opNow=op.val; // ARRIVAL / DEPARTURE / SHIFT
+
+    function normalizeBerth(val){
+      /* WAA-01 → A-01, WAA-9 → A-09 등 번호만 추출해 A- 형식으로 변환 */
+      var m=val.match(/^WAA-?(\d+)$/i);
+      if(m){
+        var n=parseInt(m[1],10);
+        return 'A-'+(n<10?'0':'')+n;
+      }
+      return val;
+    }
+    function setSelVal(id, val){
+      var el=document.getElementById(id);
+      if(!el||!val) return;
+      /* WAA- 계열은 A- 계열로 정규화 */
+      var normalized=normalizeBerth(val);
+      /* 완전 일치 우선 (원본 + 정규화 둘 다 시도) */
+      for(var i=0;i<el.options.length;i++){
+        if(el.options[i].value===val||el.options[i].text===val){ el.value=el.options[i].value; return; }
+      }
+      if(normalized!==val){
+        for(var i=0;i<el.options.length;i++){
+          if(el.options[i].value===normalized||el.options[i].text===normalized){ el.value=el.options[i].value; return; }
+        }
+      }
+      /* 부분 일치 */
+      for(var i=0;i<el.options.length;i++){
+        if(el.options[i].value.indexOf(val)>=0||val.indexOf(el.options[i].value)>=0){ el.value=el.options[i].value; return; }
+      }
+    }
+
+    if(opNow==='ARRIVAL'){
+      /* 출발지 = Pilot Station, 도착지 = Berth */
+      setSelVal('f-from', psCode);
+      setSelVal('f-berth', peCode);
+      /* 증서2도 동일하게 */
+      setSelVal('f-from2', psCode);
+      setSelVal('f-berth2', peCode);
+    } else if(opNow==='DEPARTURE'){
+      /* 출발지 = Berth, 도착지 = Pilot Station */
+      setSelVal('f-berth', psCode);
+      setSelVal('f-to', peCode);
+      setSelVal('f-berth2', psCode);
+      setSelVal('f-to2', peCode);
+    } else if(opNow==='SHIFT'){
+      /* 출발 Berth → 도착 Berth */
+      setSelVal('f-sf', psCode);
+      setSelVal('f-st', peCode);
+      setSelVal('f-sf2', psCode);
+      setSelVal('f-st2', peCode);
+    }
+    updateProg();
+  }, 80);
+
+  updateProg();
+  closeFcModal();
+  showToast('예보 연동 완료 — 나머지 항목을 확인하세요 ✓');
+}
+
+</script>
+
+<!-- FULL RECORD VIEW -->
+<div class="screen" id="screen-full">
+  <div class="app-header">
+    <button class="back-btn" onclick="showScreen('screen-record')">&#8592; 뒤로</button>
+    <h2>&#128274; 저장 기록 (읽기 전용)</h2>
+    <span class="port-badge" id="full-port">PORT</span>
+  </div>
+  <div style="background:#1a3a6b;color:#f5c842;text-align:center;padding:8px;font-size:12px;font-weight:700">&#128274; 저장된 기록 — 수정 불가 (증거자료)</div>
+  <div id="full-content" style="padding:16px;display:flex;flex-direction:column;gap:12px"></div>
+</div>
+
+<!-- GUIDE SCREEN -->
+<div class="screen" id="screen-guide">
+  <div class="app-header">
+    <button class="back-btn" onclick="showScreen('screen-home')">&#8592; 홈</button>
+    <h2>&#128218; MPX 사용설명서</h2>
+  </div>
+  <div id="guide-body" style="padding:0 0 40px"></div>
+</div>
+
+<script>
+function showGuide(){
+  var h='';
+  /* ── 표지 ── */
+  h+='<div style="background:linear-gradient(160deg,#0f2550,#1a3a6b,#2d5fa8);color:#fff;text-align:center;padding:40px 24px 32px">';
+  h+='<div style="display:inline-block;background:rgba(245,200,66,.18);border:1.5px solid #f5c842;color:#f5c842;font-size:12px;font-weight:700;letter-spacing:.12em;padding:5px 18px;border-radius:30px;margin-bottom:16px">SOLAS Reg. V/23 · IMO Res. A.1045(27)</div>';
+  h+='<div style="font-size:28px;font-weight:900;line-height:1.3;margin-bottom:8px">MPX 앱<br>사용설명서</div>';
+  h+='<div style="font-size:14px;color:rgba(255,255,255,.75);margin-bottom:20px">Master-Pilot Information Exchange<br>디지털 정보교환 카드 앱</div>';
+  h+='<div style="font-size:36px;letter-spacing:10px">&#9875;&#128203;&#9997;</div></div>';
+
+  function sec(num,title){
+    return '<div style="background:#1a3a6b;color:#fff;padding:14px 18px;display:flex;align-items:center;gap:12px;margin-top:4px">'
+      +'<div style="background:rgba(255,255,255,.25);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;flex-shrink:0">'+num+'</div>'
+      +'<div style="font-size:18px;font-weight:900">'+title+'</div></div>';
+  }
+  function card(stepN,title,body){
+    return '<div style="background:#fff;border:2px solid #c7d8f0;border-radius:12px;margin:10px 14px 0;overflow:hidden;box-shadow:0 2px 8px rgba(26,58,107,.07)">'
+      +'<div style="background:linear-gradient(90deg,#1a3a6b,#2d5fa8);color:#fff;padding:11px 16px;display:flex;align-items:center;gap:10px">'
+      +'<div style="background:rgba(255,255,255,.25);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0">'+stepN+'</div>'
+      +'<div style="font-size:16px;font-weight:800">'+title+'</div></div>'
+      +'<div style="padding:14px 16px;font-size:16px;line-height:1.9;color:#111827">'+body+'</div></div>';
+  }
+  function tip(type,icon,title,body){
+    var colors={info:['#dbeafe','#93c5fd'],warn:['#fef3c7','#f59e0b'],danger:['#fee2e2','#f87171'],ok:['#dcfce7','#4ade80']};
+    var c=colors[type]||colors.info;
+    return '<div style="background:'+c[0]+';border:2px solid '+c[1]+';border-radius:12px;padding:14px 16px;margin:10px 14px 0;display:flex;gap:12px">'
+      +'<div style="font-size:24px;flex-shrink:0;margin-top:2px">'+icon+'</div>'
+      +'<div style="flex:1;font-size:15px;line-height:1.9"><strong style="display:block;font-size:16px;font-weight:800;margin-bottom:3px">'+title+'</strong>'+body+'</div></div>';
+  }
+  function tabItem(emoji,title,desc){
+    return '<div style="background:#fff;border:2px solid #c7d8f0;border-radius:12px;padding:13px 15px;margin:8px 14px 0;display:flex;gap:13px;box-shadow:0 1px 5px rgba(26,58,107,.06)">'
+      +'<div style="font-size:26px;flex-shrink:0">'+emoji+'</div>'
+      +'<div><div style="font-size:16px;font-weight:800;color:#1a3a6b;margin-bottom:3px">'+title+'</div>'
+      +'<div style="font-size:14px;color:#4b5563;line-height:1.7">'+desc+'</div></div></div>';
+  }
+  function faq(q,a){
+    return '<div style="background:#fff;border:2px solid #c7d8f0;border-radius:12px;margin:8px 14px 0;overflow:hidden">'
+      +'<div style="background:#eef4ff;padding:13px 16px;font-weight:800;font-size:16px;color:#1a3a6b;display:flex;gap:9px;align-items:flex-start">'
+      +'<div style="background:#1a3a6b;color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;flex-shrink:0;margin-top:1px">Q</div>'+q+'</div>'
+      +'<div style="padding:13px 16px;font-size:15px;line-height:1.9;color:#111827;border-top:1px solid #c7d8f0">'+a+'</div></div>';
+  }
+
+  /* ── 1. 시작 ── */
+  h+=sec(1,'앱 시작하기 — 항구 선택');
+  h+=card(1,'앱을 열면 홈 화면이 나옵니다','상단에 현재 <strong>날짜와 시간</strong>이 자동으로 표시됩니다.<br><br>'
+    +'홈 화면 상단에 <strong>&#128202; 도선예보</strong> 목록이 자동으로 불러와집니다. '
+    +'날짜 탭(오늘/내일)으로 구분해서 볼 수 있고, <strong>↻ 새로고침</strong>으로 최신 정보를 다시 불러옵니다.<br><br>'
+    +'예보 항목을 <strong>탭</strong>하면 상세 정보가 팝업되고, <strong>MPX 작성 시작</strong>을 누르면 '
+    +'선박명·날짜·시간·작업구분·도선사·대리점·선사가 자동으로 입력되고, 도선예보의 POB 시간이 증서의 Ordered란에도 자동 입력됩니다.');
+  h+=tip('info','&#128202;','예보 상태 색상 안내',
+    '<span style="background:rgba(245,200,66,.15);color:#92400e;border:1px solid rgba(245,200,66,.4);border-radius:8px;padding:1px 7px;font-weight:700">예보</span> 대기 &nbsp;'
+    +'<span style="background:#dbeafe;color:#1e40af;border:1px solid #93c5fd;border-radius:8px;padding:1px 7px;font-weight:700">도선</span> 진행 중 &nbsp;'
+    +'<span style="background:#dcfce7;color:#166534;border:1px solid #86efac;border-radius:8px;padding:1px 7px;font-weight:700">완료</span> 종료 &nbsp;'
+    +'<span style="background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;border-radius:8px;padding:1px 7px;font-weight:700">취소</span>');
+  h+=card(2,'작업할 항구를 손가락으로 누르세요','<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
+    +'<div style="background:#f0f6ff;border:2px solid #b8d0ea;border-radius:10px;padding:12px;text-align:center"><div style="font-size:26px">&#127981;</div><div style="font-weight:800;font-size:16px">보령</div><div style="font-size:11px;color:#4b5563">VHF Ch.69</div></div>'
+    +'<div style="background:#f0f6ff;border:2px solid #b8d0ea;border-radius:10px;padding:12px;text-align:center"><div style="font-size:26px">&#128718;</div><div style="font-weight:800;font-size:16px">대산</div><div style="font-size:11px;color:#4b5563">VHF Ch.12</div></div>'
+    +'<div style="background:#f0f6ff;border:2px solid #b8d0ea;border-radius:10px;padding:12px;text-align:center"><div style="font-size:26px">&#9889;</div><div style="font-weight:800;font-size:16px">당진</div><div style="font-size:11px;color:#4b5563">VHF Ch.12</div></div>'
+    +'<div style="background:#f0f6ff;border:2px solid #b8d0ea;border-radius:10px;padding:12px;text-align:center"><div style="font-size:26px">&#127754;</div><div style="font-weight:800;font-size:16px">태안</div><div style="font-size:11px;color:#4b5563">VHF Ch.12</div></div>'
+    +'</div>항구를 누르면 <strong>MPX 입력 화면</strong>으로 바로 넘어갑니다.');
+  h+=tip('info','&#128161;','VHF 채널이 자동 입력됩니다','항구를 선택하는 순간, 해당 항구의 VHF 채널이 자동으로 입력되어 있습니다. 확인만 하시면 됩니다.');
+
+  /* ── 2. 탭 구성 ── */
+  h+=sec(2,'탭 구성 한눈에 보기');
+  h+='<div style="padding:12px 14px 0;font-size:16px;color:#111827;line-height:1.8">입력 화면 상단에 <strong>6개의 탭</strong>이 있습니다. 순서대로 진행하시면 됩니다.</div>';
+  h+=tabItem('&#128674;','① 선박정보','날짜·시간, 작업 구분(입항/출항/이동), 선박명, 제원 등을 입력합니다.');
+  h+=tabItem('&#128100;','② 도선정보','도선사 이름·등급, 선장 이름, VHF 채널, 접안 방향 등을 입력합니다.');
+  h+=tabItem('&#9989;','③ 체크리스트','SOLAS 규정에 따른 확인 항목을 하나씩 체크합니다.');
+  h+=tabItem('&#128676;','④ 예선','해당 항구의 예선 목록에서 각 예선의 배치 위치를 선택합니다.');
+  h+=tabItem('&#9997;&#65039;','⑤ 서명','체크리스트 요약 확인 후, 선장과 도선사의 서명을 받습니다.');
+  h+=tabItem('&#128220;','⑥ 증서','도선증서와 보트서비스증서를 작성하고 인쇄·저장합니다.');
+  h+=tip('warn','&#9888;&#65039;','탭 이동 시 입력 내용은 유지됩니다','탭을 앞뒤로 자유롭게 이동해도 이미 입력한 내용이 사라지지 않습니다. 홈 버튼은 누르지 마세요.');
+
+  /* ── 3. 선박정보 ── */
+  h+=sec(3,'선박정보 입력');
+  h+=card('①','날짜·시간 확인','날짜와 시간이 <strong>자동으로 현재 시각</strong>으로 채워져 있습니다. 필요하면 직접 수정하실 수 있습니다.<br>날짜를 선택하면 <strong>한국 토·일요일 및 공휴일(대체 공휴일 포함)</strong>인 경우 도선증서와 보트서비스증서의 <strong>Sat/Sun/Holiday</strong>가 자동으로 체크됩니다.');
+  h+=card('②','작업 구분 선택','<strong>입항 / 출항 / 이동</strong> 중 해당하는 버튼을 누르세요. 누른 버튼이 진한 파란색으로 바뀝니다. 선택에 따라 Pilot Station/부두 항목이 자동으로 변경됩니다.');
+  h+=card('②-2','<span style="color:#c53030">증서 2</span> 날짜·시간·작업구분','구분선 아래 <span style="color:#c53030;font-weight:700">[증서 2]</span> 항목은 두 번째 증서를 위한 별도 입력란입니다.<br>날짜는 자동 기입되며 수정 가능합니다.<br><span style="color:#c53030;font-weight:700">빨간 테두리</span>의 시간·부두 항목은 필수 입력란입니다.');
+  h+=card('③','선박명 입력 (필수)','<em style="color:#1a3a6b;font-style:normal">"M/V ..."</em> 칸에 선박명을 입력하세요. <strong style="color:#c53030">빨간 테두리</strong>로 표시된 칸은 필수 입력 항목입니다.');
+  h+=card('④','Owner / Agency 선택','목록에서 선택하시거나, 없으면 <strong>"✏️ 직접 입력..."</strong>을 선택 후 직접 쓰시면 됩니다.');
+  h+=card('⑤','선박 제원 입력','LOA, Beam, 흘수 등 수치를 입력합니다. 단위(m, MT 등)는 자동으로 붙습니다. 추진 형태와 프로펠러 회전도 버튼으로 선택하면 됩니다.');
+  h+=card('⑥','선종 선택 — 자동 연동','<strong style="color:#c53030">빨간 테두리</strong> 선종 란은 필수 항목입니다.<br>선종이 <strong>Tanker (Oil/Chemical), VLCC, LNG Carrier, LPG Carrier</strong> 중 하나이면 증서의 <strong>DG CGO Ship</strong> 체크박스가 자동으로 체크됩니다.');
+  h+=tip('ok','&#9989;','진행률 표시바를 확인하세요','화면 상단의 파란 막대가 입력 완료 정도를 퍼센트로 보여줍니다. 100%에 가까울수록 빠짐없이 입력된 것입니다.');
+
+  /* ── 4. 도선정보 ── */
+  h+=sec(4,'도선정보 입력');
+  h+=card('①','Main Pilot 선택 (필수)','목록에서 <strong>본인 이름</strong>을 선택하시면 됩니다. 선택하면 도선증서에도 자동으로 반영됩니다.');
+  h+=card('②','Co Pilot 선택','Co Pilot이 없으면 <strong>"-- 없음 --"</strong> 그대로 두시면 됩니다.');
+  h+=card('③','선장 이름·VHF·접안 방향','선장 이름을 입력하고, VHF 채널을 확인합니다. 접안 방향은 <strong>Port Side To / Starboard Side To / SPM</strong> 중에서 선택합니다.');
+
+  /* ── 5. 체크리스트 ── */
+  h+=sec(5,'체크리스트 사용법');
+  h+='<div style="padding:12px 14px 4px;font-size:16px;color:#111827;line-height:1.8">항목을 <strong>손가락으로 한 번 누를 때마다</strong> 상태가 바뀝니다.</div>';
+  h+='<div style="margin:8px 14px 0">';
+  h+='<div style="background:#fff;border:2px solid #c7d8f0;border-radius:12px;padding:13px 15px;display:flex;gap:13px;align-items:flex-start;margin-bottom:6px">'
+    +'<div style="width:32px;height:32px;border-radius:8px;border:3px solid #93b4d4;background:#f0f6ff;display:flex;align-items:center;justify-content:center;flex-shrink:0"></div>'
+    +'<div><div style="font-weight:800;color:#6b7280;font-size:15px">⬜ 미확인 — 아직 안 누름</div><div style="font-size:14px;color:#4b5563">처음 상태입니다.</div></div></div>';
+  h+='<div style="text-align:center;font-size:20px;color:#93b4d4">&#8595; 한 번 누르면</div>';
+  h+='<div style="background:#fff;border:2px solid #c7d8f0;border-radius:12px;padding:13px 15px;display:flex;gap:13px;align-items:flex-start;margin:6px 0">'
+    +'<div style="width:32px;height:32px;border-radius:8px;background:#166534;border:3px solid #166534;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;flex-shrink:0">v</div>'
+    +'<div><div style="font-weight:800;color:#166534;font-size:15px">&#9989; 완료 — 확인됨</div><div style="font-size:14px;color:#4b5563;text-decoration:line-through">항목 내용이 취소선으로 표시됩니다.</div></div></div>';
+  h+='<div style="text-align:center;font-size:20px;color:#93b4d4">&#8595; 한 번 더 누르면</div>';
+  h+='<div style="background:#fff;border:2px solid #c7d8f0;border-radius:12px;padding:13px 15px;display:flex;gap:13px;align-items:flex-start;margin:6px 0">'
+    +'<div style="width:32px;height:32px;border-radius:8px;background:#fee2e2;border:3px solid #991b1b;color:#991b1b;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;flex-shrink:0">N/A</div>'
+    +'<div><div style="font-weight:800;color:#991b1b;font-size:15px">&#128683; N/A — 해당 없음</div><div style="font-size:14px;color:#4b5563">해당 선박에 적용되지 않는 항목일 때 사용합니다.</div></div></div>';
+  h+='<div style="text-align:center;font-size:20px;color:#93b4d4">&#8595; 한 번 더 누르면 ⬜ 미확인으로 돌아옵니다</div>';
+  h+='</div>';
+  h+='<div style="padding:10px 14px 0;font-size:15px;color:#111827;font-weight:700">체크리스트 3개 구역:</div>';
+  h+='<div style="margin:6px 14px 0;background:#fff;border:2px solid #c7d8f0;border-radius:12px;padding:14px 16px;font-size:15px;line-height:2.1">'
+    +'&#128674; <strong>선박 준비사항</strong> — 선박 측 준비 확인<br>'
+    +'&#9881;&#65039; <strong>장비 설정</strong> — VHF, 기관, 계류팀 등<br>'
+    +'</div>';
+  h+=tip('warn','&#9888;&#65039;','미완료 항목이 있으면 경고가 뜹니다','서명 탭으로 넘어가면 완료/N/A/미완료 개수가 요약되어 나옵니다. 빠진 항목이 있는지 꼭 확인하세요.');
+
+  /* ── 6. 예선 ── */
+  h+=sec(6,'예선 배치 입력');
+  h+=card(1,'예선 목록 확인','선택한 항구의 예선 목록이 자동으로 나타납니다. 예선명, GT, HP/BP가 표시됩니다.');
+  h+=card(2,'배치 위치 선택','오른쪽 드롭다운 메뉴를 눌러 위치를 선택하세요.<br>'
+    +'<div style="background:#f8faff;border:2px solid #93b4d4;border-radius:8px;padding:10px 12px;margin-top:8px;font-size:14px;line-height:1.9">'
+    +"선수(F'cle deck) / 선미(After quarter) / 선수(Main deck) / 선미(In front of bridge)<br>선수 Push / 선미 Pull / Fwd Center Lead / Aft Center Lead / 대기(Standby)</div>"
+    +'<br>사용하지 않는 예선은 "—" 그대로 두시면 됩니다.');
+
+  /* ── 7. 서명 ── */
+  h+=sec(7,'서명 받기');
+  h+=card(1,'체크리스트 요약 확인','서명 탭 상단에 완료/N/A/미완료 개수가 표시됩니다. 미완료 항목이 있으면 <strong style="color:#991b1b">빨간 경고 메시지</strong>가 나옵니다.');
+  h+=card(2,'선장 서명 받기','<strong>"선장 서명"</strong> 영역에서 선장이 손가락으로 직접 서명합니다. 잘못 서명했을 경우 <span style="background:#fee2e2;border:1px solid #991b1b;color:#991b1b;padding:1px 8px;border-radius:5px;font-size:13px;font-weight:700">Clear</span> 버튼을 누르고 다시 서명하세요.');
+  h+=card(3,'도선사 서명 하기','<strong>"도선사 서명"</strong> 영역에 도선사가 서명합니다.');
+  h+=tip('info','&#128161;','서명은 저장 후 잠김 처리됩니다','저장이 완료되면 서명을 포함한 모든 내용이 수정 불가 상태로 잠깁니다.');
+
+  /* ── 8. 증서 ── */
+  h+=sec(8,'증서 작성 &amp; 저장');
+  h+=card(1,'증서 탭으로 이동','선박정보와 도선사 정보에서 입력한 내용이 <strong>자동으로 증서에 채워집니다.</strong> 날짜, 선박명, 항구, 도선사 이름 등을 다시 입력할 필요가 없습니다.<br><br><strong>두 손가락으로 펼치면 확대, 오므리면 축소</strong>됩니다. 서명란이 작을 때 확대 후 서명하세요. <strong>두 번 빠르게 탭</strong>하면 100% 크기로 돌아옵니다.');
+  h+=card(2,'도선증서 추가 입력','<div style="background:#f0f6ff;border-radius:8px;padding:10px 14px;margin-top:6px;font-size:15px;line-height:2">'
+    +'• 도선 지시(Order) 시각<br>• 도선 완료 시각<br>• Departure PS / Destination PS<br>• 특수 사항 체크박스 (야간, 홍수조류 등)</div>');
+  h+=card('②-b','Remarks 입력 (도선증서)','Remarks 란에 해당 항목의 체크박스를 누른 후 시간을 입력하세요.<br><div style="background:#f0f6ff;border-radius:8px;padding:8px 12px;margin-top:6px;font-size:14px;line-height:2.1">&#9744; First line &nbsp;&#9744; Last line<br>&#9744; Dropped anchor &nbsp;&#9744; Anchor aweigh<br>&#9744; Moored &nbsp;&#9744; Unmoored</div><br>시간은 <strong>숫자 4자리</strong>로 입력 (예: 1430 → 14:30 자동변환)');
+  h+=card(3,'보트서비스증서 입력','승선/하선 시각을 각각 입력합니다.<br><strong>Sat/Sun/Holiday</strong>는 날짜 선택 시 자동 체크됩니다. 야간(Night), Guide Boat 해당 시 수동으로 체크하세요.');
+  h+=card(4,'저장 & 인쇄 버튼','<div style="display:flex;flex-direction:column;gap:10px;margin-top:6px">'
+    +'<div style="display:flex;align-items:center;gap:12px"><span style="background:linear-gradient(135deg,#1a3a6b,#0f2550);color:#fff;padding:8px 14px;border-radius:8px;font-weight:800;font-size:14px">&#128424;&#65039; 인쇄</span><span style="font-size:15px">→ 종이로 인쇄할 때</span></div>'
+    +'<div style="display:flex;align-items:center;gap:12px"><span style="background:linear-gradient(135deg,#166534,#14532d);color:#fff;padding:8px 14px;border-radius:8px;font-weight:800;font-size:14px">&#128190; 저장 &amp; 완료</span><span style="font-size:15px">→ 앱에 기록 저장</span></div></div>');
+  h+=tip('ok','&#9989;','저장 후 홈 화면에서 기록을 확인할 수 있습니다','저장하면 홈 화면 하단 "최근 기록"에 방금 저장한 내용이 나타납니다.');
+  h+=tip('warn','&#128204;','임시저장 안내','임시저장은 현재 화면을 유지한 채 기록을 보관합니다. 홈 화면에서 <strong style="color:#92400e">임시저장</strong> 배지로 표시됩니다. 같은 작업에서 다시 임시저장하면 이전 임시저장 기록이 덮어씌워집니다. 최종 완료 시 반드시 <strong>저장 &amp; 완료</strong>를 눌러주세요.');
+  h+=tip('info','&#128196;','MPX Report 자동 저장','<strong>저장 &amp; 완료</strong> 버튼을 누르면 증서 파일 외에 <strong>선명_날짜_승선시간_MPX_Report.html</strong> 파일이 자동으로 다운로드됩니다.<br>이 파일에는 선박정보·도선정보·체크리스트·예선 배치·MPX 서명이 모두 포함됩니다.');
+
+  /* ── 9. 기록 ── */
+  h+=sec(9,'저장된 기록 보기');
+  h+=card(1,'홈 화면 → 최근 기록 목록','저장된 기록이 홈 화면 하단에 날짜/선박명/항구 형태로 나열됩니다. 원하는 기록을 누르면 상세 내용을 볼 수 있습니다.');
+  h+=card(2,'기록 상세 화면','<div style="display:flex;flex-direction:column;gap:9px;margin-top:6px">'
+    +'<div style="display:flex;align-items:center;gap:10px"><span style="background:#fee2e2;border:1.5px solid #991b1b;color:#991b1b;padding:7px 12px;border-radius:8px;font-weight:800;font-size:14px">&#128465;&#65039; 삭제</span><span style="font-size:14px">기록 삭제 — 확인 창이 뜹니다</span></div>'
+    +'<div style="display:flex;align-items:center;gap:10px"><span style="background:linear-gradient(135deg,#1a3a6b,#0f2550);color:#fff;padding:7px 12px;border-radius:8px;font-weight:800;font-size:14px">&#128228; 공유/이메일</span><span style="font-size:14px">이메일로 전송합니다</span></div>'
+    +'<div style="display:flex;align-items:center;gap:10px"><span style="background:linear-gradient(135deg,#1e3a5f,#0f2550);color:#fff;padding:7px 12px;border-radius:8px;font-weight:800;font-size:14px">&#128274; 전체 내용 보기</span><span style="font-size:14px">수정 불가 상태로 전체 확인</span></div></div>');
+  h+=tip('info','&#128161;','이메일 주소','dscontrol08@naver.com — 공유 버튼을 누르면 이 주소로 자동 구성됩니다.');
+  h+=tip('danger','&#9888;&#65039;','삭제는 복구가 안 됩니다','삭제 버튼을 누르면 <strong>"정말 삭제하시겠습니까?"</strong> 확인 창이 뜹니다. <strong>취소</strong>를 누르면 돌아가고, <strong>삭제</strong>를 누르면 완전히 지워집니다. 삭제 후에는 복구가 불가능합니다.');
+
+  /* ── 10. FAQ ── */
+  h+=sec(10,'자주 묻는 질문 (FAQ)');
+  h+=faq('항구를 잘못 선택했어요.','화면 왼쪽 상단의 <strong>← 홈</strong> 버튼을 누르시면 홈 화면으로 돌아갑니다. 다시 올바른 항구를 선택하시면 됩니다. 단, 이미 입력한 내용은 초기화됩니다.');
+  h+=faq('탭을 넘겼더니 입력한 내용이 사라졌어요.','탭 이동으로는 내용이 지워지지 않습니다. <strong style="color:#991b1b">홈 버튼을 누르셨다면</strong> 내용이 초기화됩니다. 입력 중에는 홈 버튼을 누르지 마세요.');
+  h+=faq('서명을 잘못 받았어요.','서명 영역 오른쪽의 <span style="background:#fee2e2;border:1px solid #991b1b;color:#991b1b;padding:1px 7px;border-radius:5px;font-size:13px;font-weight:700">Clear</span> 버튼을 누르면 서명이 지워집니다. 다시 받으시면 됩니다.');
+  h+=faq('Owner나 Agency가 목록에 없어요.','드롭다운 맨 아래의 <strong>"✏️ 직접 입력..."</strong>을 선택하시면 직접 입력하는 칸이 나타납니다.');
+  h+=faq('증서 내용이 자동으로 채워지지 않아요.','증서 탭을 처음 열면 자동으로 동기화됩니다. 혹시 비어있다면 <strong>다른 탭으로 갔다가 다시 증서 탭</strong>으로 돌아와 보세요.');
+  h+=faq('시간 입력칸에 어떻게 입력하나요?','숫자 4자리를 연속으로 입력하시면 됩니다. 예를 들어 <strong>1430</strong>을 누르면 자동으로 <strong>14:30</strong>으로 변환됩니다.');
+  h+=faq('체크박스 옆의 ? 버튼은 무엇인가요?','각 항목에 대한 <strong>설명란</strong>입니다. ? 버튼을 누르면 노란 설명 박스가 펼쳐지고, 다시 누르면 닫힙니다. 인쇄 시에는 ? 버튼과 설명란이 모두 자동으로 숨겨집니다.');
+  h+=faq('카카오톡으로 열면 소스코드가 보여요.','카카오톡 내부 브라우저에서는 HTML 파일을 직접 열지 못합니다. <strong>파일을 다운로드 폴더에 저장</strong>한 후, 크롬·삼성인터넷 등 기본 브라우저로 열어주세요. 또는 브라우저로 열기 옵션을 선택하세요.');
+
+  /* ── 바닥글 ── */
+  h+='<div style="background:#0f2550;color:rgba(255,255,255,.7);text-align:center;padding:24px 20px;font-size:13px;line-height:2;margin-top:10px">'
+    +'<div style="font-size:22px;margin-bottom:6px">&#9875;</div>'
+    +'<div style="color:#fff;font-weight:800;font-size:15px">MPX 디지털 정보교환 앱</div>'
+    +'<div>대산항 도선사회 (Daesan Pilot Association)</div>'
+    +'<div style="margin-top:6px;font-size:12px">SOLAS Reg. V/23 · IMO Res. A.1045(27) 준수</div></div>';
+
+  document.getElementById('guide-body').innerHTML=h;
+  showScreen('screen-guide');
+}
+setTimeout(function(){
+  _fcInitDate();
+  loadForecast();
+}, 300);
+</script>
