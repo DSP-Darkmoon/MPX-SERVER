@@ -87,7 +87,7 @@ app.get('/api/schedule', async function(req, res) {
  
 // 루트 → 최신 MPX 파일로 리다이렉트
 app.get('/', function(req, res) {
-  res.redirect('/MPX_2026-04-06_v70.html');
+  res.redirect('/MPX_2026-04-06_v71.html');
 });
  
 app.listen(PORT, function() {
